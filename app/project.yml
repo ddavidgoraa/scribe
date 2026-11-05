@@ -1,0 +1,56 @@
+name: Scribe
+options:
+  bundleIdPrefix: dev.dawidgora
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: NO
+packages:
+  MdCore:
+    path: Packages/MdCore
+targets:
+  Scribe:
+    type: application
+    platform: macOS
+    sources: [Scribe]
+    dependencies:
+      - package: MdCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.dawidgora.scribe
+        PRODUCT_NAME: Scribe
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Scribe
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Dawid Góra. MIT License."
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+  ScribeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [ScribeTests]
+    dependencies:
+      - target: Scribe
+      - package: MdCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+schemes:
+  Scribe:
+    build:
+      targets:
+        Scribe: all
+        ScribeTests: [test]
+    test:
+      targets: [ScribeTests]

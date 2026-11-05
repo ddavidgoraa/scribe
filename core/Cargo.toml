@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["mdcore", "mdcore-ffi"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[profile.release]
+# Cargo strips debuginfo in release by default, and on this toolchain stripping
+# corrupts host proc-macro dylibs (dlopen: "mis-aligned LINKEDIT string pool").
+strip = false
