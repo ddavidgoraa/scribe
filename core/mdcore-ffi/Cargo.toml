@@ -15,3 +15,4 @@ path = "src/bin/uniffi-bindgen.rs"
 [dependencies]
 mdcore = { path = "../mdcore" }
 uniffi = { version = "0.32", features = ["cli"] }
+thiserror = "2"

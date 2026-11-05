@@ -1,5 +1,12 @@
 //! Scribe core: Markdown parsing, library index, search, file watching.
 
+mod error;
+pub mod files;
+pub mod library;
+pub mod watch;
+
+pub use error::{Error, Result};
+
 /// Version of the core library.
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")

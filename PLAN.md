@@ -66,7 +66,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 ## Milestones to v0.1
 
 - [x] **M0** — monorepo, UniFFI "hello" bridge, CI
-- [ ] **M1** — library (choose folder, tree, open files), autosave, `notify`
+- [x] **M1** — library (choose folder, tree, open files), autosave, `notify`
 - [ ] **M2** — syntax styling from Rust spans (markers visible)
 - [ ] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
 - [ ] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
