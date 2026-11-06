@@ -69,7 +69,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - [x] **M0** — monorepo, UniFFI "hello" bridge, CI
 - [x] **M1** — library (choose folder, tree, open files), autosave, `notify`
 - [x] **M2** — syntax styling from Rust spans (markers visible)
-- [ ] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
+- [x] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
 - [ ] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
 - [ ] **M5** — iA typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
 
@@ -83,6 +83,9 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 
 - Highlighting: full parse on every edit (≈28 ms for 520 KB in release, sub-ms for typical notes), but only the
   paragraphs whose spans changed are restyled (`SpanDiff`). Revisit with incremental parsing if large notes lag.
+- Live preview never changes the text: hidden markers get a 0.01 pt clear font; math/images are drawn by
+  `DecoratedLayoutFragment` (TextKit 2) over hidden source, space reserved by `.kern` (inline) or line height
+  (blocks). Math is rendered by SwiftMath as a black mask and tinted with the view's label color.
 - Code block background is per-character (ragged right edge); proper block decoration comes with M5 typography.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain

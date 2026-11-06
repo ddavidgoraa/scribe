@@ -7,9 +7,12 @@ import XCTest
 final class HighlighterTests: XCTestCase {
     private let theme = MarkdownTheme.standard
 
-    private func styled(_ text: String) -> NSTextStorage {
+    /// Styles `text` with the caret at `caret` (`nil`: no element active, markers hidden).
+    private func styled(_ text: String, caret: Int? = nil) -> NSTextStorage {
         let storage = NSTextStorage(string: text)
-        MarkdownHighlighter(theme: theme).highlightAll(storage)
+        let highlighter = MarkdownHighlighter(theme: theme)
+        highlighter.resetCaret(caret)
+        highlighter.highlightAll(storage)
         return storage
     }
 
@@ -26,7 +29,7 @@ final class HighlighterTests: XCTestCase {
     }
 
     func testHeadingIsLargerAndBoldWithDimmedMarker() {
-        let s = styled("## Title\nbody")
+        let s = styled("## Title\nbody", caret: 3)
         XCTAssertGreaterThan(font(s, at: 3).pointSize, theme.fontSize)
         XCTAssertTrue(traits(s, at: 3).contains(.boldFontMask))
         XCTAssertEqual(color(s, at: 0), theme.markerColor)
@@ -38,13 +41,13 @@ final class HighlighterTests: XCTestCase {
         let s = styled("***both*** and *it*")
         let t = traits(s, at: 4)
         XCTAssertTrue(t.contains(.boldFontMask) && t.contains(.italicFontMask))
-        XCTAssertEqual(color(s, at: 0), theme.markerColor)
+        XCTAssertEqual(color(s, at: 0), .clear, "inactive markers are hidden")
         XCTAssertTrue(traits(s, at: 16).contains(.italicFontMask))
         XCTAssertFalse(traits(s, at: 11).contains(.italicFontMask))
     }
 
     func testCodeAndMathAreMonospaced() {
-        let s = styled("`x` and $y$")
+        let s = styled("`x` and $y$", caret: 9)
         XCTAssertTrue(font(s, at: 1).isFixedPitch)
         XCTAssertTrue(font(s, at: 9).isFixedPitch)
         XCTAssertEqual(color(s, at: 9), theme.mathColor)
@@ -52,7 +55,7 @@ final class HighlighterTests: XCTestCase {
     }
 
     func testLinkTextColoredAndUrlDimmed() {
-        let s = styled("[docs](https://x.y)")
+        let s = styled("[docs](https://x.y)", caret: 2)
         XCTAssertEqual(color(s, at: 2), theme.linkColor)
         XCTAssertEqual(color(s, at: 10), theme.markerColor)
     }
@@ -65,7 +68,7 @@ final class HighlighterTests: XCTestCase {
         storage.replaceCharacters(in: NSRange(location: 0, length: 0), with: "# ")
         highlighter.textDidChange(storage, editedRange: NSRange(location: 0, length: 2), changeInLength: 2)
         XCTAssertTrue(traits(storage, at: 3).contains(.boldFontMask))
-        XCTAssertEqual(color(storage, at: 0), theme.markerColor)
+        XCTAssertEqual(color(storage, at: 0), theme.markerColor, "caret after the edit reveals the marker")
 
         storage.replaceCharacters(in: NSRange(location: 0, length: 2), with: "")
         highlighter.textDidChange(storage, editedRange: NSRange(location: 0, length: 0), changeInLength: -2)

@@ -13,6 +13,9 @@ settings:
 packages:
   MdCore:
     path: Packages/MdCore
+  SwiftMath:
+    url: https://github.com/mgriebling/SwiftMath
+    from: 1.7.3
 targets:
   Scribe:
     type: application
@@ -20,6 +23,7 @@ targets:
     sources: [Scribe]
     dependencies:
       - package: MdCore
+      - package: SwiftMath
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.dawidgora.scribe

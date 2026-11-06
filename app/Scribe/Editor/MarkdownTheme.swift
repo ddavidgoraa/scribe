@@ -31,5 +31,11 @@ struct MarkdownTheme {
         [.font: bodyFont, .foregroundColor: textColor, .paragraphStyle: paragraphStyle]
     }
 
+    /// Attributes that make source characters (nearly) invisible and zero-width.
+    static var hiddenAttributes: [NSAttributedString.Key: Any] { [
+        .font: NSFont.systemFont(ofSize: 0.01),
+        .foregroundColor: NSColor.clear,
+    ] }
+
     static let standard = MarkdownTheme()
 }

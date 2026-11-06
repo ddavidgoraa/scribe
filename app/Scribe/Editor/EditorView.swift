@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// Markdown editor backed by NSTextView (TextKit 2). The text is the file verbatim;
-/// `MarkdownHighlighter` only adds attributes. Marker hiding arrives in M3.
+/// `MarkdownHighlighter` only adds attributes (styling, hidden markers, decorations).
 struct EditorView: NSViewRepresentable {
     @Bindable var document: NoteDocument
 
@@ -27,6 +27,7 @@ struct EditorView: NSViewRepresentable {
         textView.textContainer?.widthTracksTextView = true
         textView.delegate = context.coordinator
         textView.textStorage?.delegate = context.coordinator
+        textView.textLayoutManager?.delegate = context.coordinator
         context.coordinator.textView = textView
         context.coordinator.load(document.text)
 
@@ -65,7 +66,8 @@ struct EditorView: NSViewRepresentable {
     }
 
     @MainActor
-    final class Coordinator: NSObject, NSTextViewDelegate, @preconcurrency NSTextStorageDelegate {
+    final class Coordinator: NSObject, NSTextViewDelegate, @preconcurrency NSTextStorageDelegate,
+        @preconcurrency NSTextLayoutManagerDelegate {
         var document: NoteDocument
         weak var textView: NSTextView?
         var reloadGeneration = 0
@@ -78,10 +80,37 @@ struct EditorView: NSViewRepresentable {
         /// Replaces the whole text and restyles it.
         func load(_ text: String) {
             guard let textView, let storage = textView.textStorage else { return }
+            highlighter.baseURL = document.url.deletingLastPathComponent()
             isLoading = true
             textView.string = text
             isLoading = false
+            highlighter.resetCaret(textView.selectedRange().length == 0 ? textView.selectedRange().location : nil)
             highlighter.highlightAll(storage)
+        }
+
+        func textViewDidChangeSelection(_ notification: Notification) {
+            guard !isLoading, let textView, let storage = textView.textStorage else { return }
+            highlighter.selectionDidChange(storage, selection: textView.selectedRange())
+        }
+
+        /// Never type with the attributes of hidden markers (invisible, 0.01 pt).
+        func textView(
+            _ textView: NSTextView,
+            shouldChangeTypingAttributes oldTypingAttributes: [String: Any] = [:],
+            toAttributes newTypingAttributes: [NSAttributedString.Key: Any] = [:]
+        ) -> [NSAttributedString.Key: Any] {
+            if let font = newTypingAttributes[.font] as? NSFont, font.pointSize < 1 {
+                return highlighter.theme.baseAttributes
+            }
+            return newTypingAttributes.filter { $0.key != .scribeDecoration && $0.key != .kern }
+        }
+
+        func textLayoutManager(
+            _ textLayoutManager: NSTextLayoutManager,
+            textLayoutFragmentFor location: any NSTextLocation,
+            in textElement: NSTextElement
+        ) -> NSTextLayoutFragment {
+            DecoratedLayoutFragment(textElement: textElement, range: textElement.elementRange)
         }
 
         func textStorage(
