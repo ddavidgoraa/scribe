@@ -25,9 +25,6 @@ final class NoteDocument {
     private(set) var conflict: Conflict?
     /// Incremented when `text` is replaced from disk, so the editor knows to reload.
     private(set) var reloadGeneration = 0
-    /// Created via "New Note" this session and not renamed by hand:
-    /// the file name follows the first line.
-    var followsFirstLine = false
 
     /// Called after the file was renamed (auto-naming), with the new URL.
     var onRename: ((URL) -> Void)?
@@ -62,6 +59,8 @@ final class NoteDocument {
         saveTask?.cancel()
         saveTask = nil
         guard conflict == nil else { return }
+        // Judged against the last saved text: the name matched the *old* first line.
+        let follows = followsFirstLine(fileStem: stem, text: syncedText)
         if isDirty || force {
             let snapshot = text
             do {
@@ -72,14 +71,14 @@ final class NoteDocument {
                 return
             }
         }
-        if followsFirstLine, UserDefaults.standard.autoNameFromFirstLine {
+        if follows, UserDefaults.standard.autoNameFromFirstLine {
             renameToFirstLine()
         }
     }
 
     private func renameToFirstLine() {
         guard let title = titleFromText(text: text),
-              title != url.deletingPathExtension().lastPathComponent
+              title != stem
         else { return }
         do {
             let newPath = try renameNote(path: url.path, newName: title)
@@ -91,13 +90,15 @@ final class NoteDocument {
         }
     }
 
-    /// Manual rename: stops following the first line.
+    /// Manual rename. A name that differs from the first line stops auto-naming.
     func rename(to name: String) throws {
         save()
         let newPath = try renameNote(path: url.path, newName: name)
-        followsFirstLine = false
         url = URL(fileURLWithPath: newPath)
     }
+
+    /// File name without extension.
+    var stem: String { url.deletingPathExtension().lastPathComponent }
 
     // MARK: External changes
 

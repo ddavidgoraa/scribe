@@ -4,6 +4,8 @@ use std::fs::{self, OpenOptions};
 use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
+use unicode_normalization::UnicodeNormalization;
+
 use crate::error::{Error, IoContext, Result};
 
 const UNTITLED: &str = "Untitled";
@@ -58,6 +60,35 @@ pub fn title_from_text(text: &str) -> Option<String> {
     sanitize_stem(line)
 }
 
+/// Whether a note's file name should follow its first line.
+///
+/// Comparison ignores Unicode normalization: macOS file APIs often hand back
+/// decomposed (NFD) names while typed text is composed (NFC).
+///
+/// Stateless, so it survives restarts and syncing: true when the stem is
+/// `Untitled` / `Untitled N`, or equals the title derived from `text`
+/// (optionally with a ` N` collision suffix). A note renamed by hand to something
+/// else stops following automatically.
+pub fn follows_first_line(stem: &str, text: &str) -> bool {
+    let stem: String = stem.nfc().collect();
+    let stem = stem.as_str();
+    if strip_number_suffix(stem) == UNTITLED {
+        return true;
+    }
+    match title_from_text(text) {
+        Some(title) => stem == title || strip_number_suffix(stem) == title,
+        None => false,
+    }
+}
+
+/// `"Ideas 2"` → `"Ideas"`; numbers below 2 and non-numeric suffixes are kept.
+fn strip_number_suffix(stem: &str) -> &str {
+    match stem.rsplit_once(' ') {
+        Some((base, n)) if n.parse::<u32>().is_ok_and(|n| n >= 2) && !n.starts_with('0') => base,
+        _ => stem,
+    }
+}
+
 /// Renames a note to `new_stem` + its current extension, in the same folder.
 /// Appends ` 2`, ` 3`, … if the name is taken. Returns the new path.
 pub fn rename(path: &Path, new_stem: &str) -> Result<PathBuf> {
@@ -99,6 +130,7 @@ fn sanitize_stem(raw: &str) -> Option<String> {
             c => c,
         })
         .collect();
+    let cleaned: String = cleaned.nfc().collect();
     let collapsed = cleaned.split_whitespace().collect::<Vec<_>>().join(" ");
     let trimmed = collapsed.trim_start_matches('.').trim();
     let truncated: String = trimmed.chars().take(MAX_TITLE_CHARS).collect();
@@ -143,6 +175,32 @@ mod tests {
         assert_eq!(title_from_text("...secret").as_deref(), Some("secret"));
         assert_eq!(title_from_text("   \n#  \n"), None);
         assert_eq!(title_from_text(&"x".repeat(200)).unwrap().chars().count(), MAX_TITLE_CHARS);
+    }
+
+    #[test]
+    fn untitled_notes_follow_first_line() {
+        assert!(follows_first_line("Untitled", ""));
+        assert!(follows_first_line("Untitled 3", "# Anything"));
+        assert!(!follows_first_line("Untitled 1", "# Anything"));
+        assert!(!follows_first_line("Untitled draft", "# Anything"));
+    }
+
+    #[test]
+    fn notes_named_after_first_line_keep_following() {
+        assert!(follows_first_line("Shopping list", "# Shopping list\n- milk"));
+        assert!(follows_first_line("Ideas 2", "Ideas"));
+        assert!(follows_first_line("Plan- Q1-Q2", "## Plan: Q1/Q2"));
+        assert!(!follows_first_line("Groceries", "# Shopping list"));
+        assert!(!follows_first_line("Notes", ""));
+    }
+
+    #[test]
+    fn follow_check_ignores_unicode_normalization() {
+        let nfd_stem: String = "Trip to Kraków".nfd().collect();
+        assert_ne!(nfd_stem, "Trip to Kraków");
+        assert!(follows_first_line(&nfd_stem, "# Trip to Kraków"));
+        let nfd_text: String = "# Zażółć".nfd().collect();
+        assert_eq!(title_from_text(&nfd_text).as_deref(), Some("Zażółć"));
     }
 
     #[test]

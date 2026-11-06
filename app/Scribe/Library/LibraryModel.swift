@@ -136,7 +136,6 @@ final class LibraryModel {
             let path = try createUntitledNote(dir: dir.path)
             refresh()
             selection = relativePath(of: URL(fileURLWithPath: path))
-            document?.followsFirstLine = true
         } catch {
             report(error)
         }

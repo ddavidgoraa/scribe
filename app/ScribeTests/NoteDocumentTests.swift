@@ -100,7 +100,6 @@ final class NoteDocumentTests: XCTestCase {
     func testNewNoteFollowsFirstLineUntilManualRename() throws {
         let url = URL(fileURLWithPath: try createUntitledNote(dir: dir.path))
         let doc = try NoteDocument(url: url)
-        doc.followsFirstLine = true
         var renamedTo: URL?
         doc.onRename = { renamedTo = $0 }
 
@@ -117,11 +116,38 @@ final class NoteDocumentTests: XCTestCase {
         XCTAssertEqual(doc.url.lastPathComponent, "Groceries.md")
     }
 
+    func testUntitledNoteRenamesAfterReopen() throws {
+        // Simulates an app restart: a fresh document, no in-memory state.
+        let url = try makeNote("Untitled 2.md", "draft")
+        let doc = try NoteDocument(url: url)
+        doc.text = "# Trip to Kraków"
+        doc.save()
+        XCTAssertEqual(doc.url.lastPathComponent, "Trip to Kraków.md")
+    }
+
+    func testAutoNamedNoteKeepsFollowingAfterReopen() throws {
+        let url = try makeNote("Trip.md", "# Trip\nbody")
+        let doc = try NoteDocument(url: url)
+        doc.text = "# Trip to Kraków\nbody"
+        doc.save()
+        XCTAssertEqual(doc.url.lastPathComponent, "Trip to Kraków.md")
+        doc.text = "# Trip to Gdańsk\nbody"
+        doc.save()
+        XCTAssertEqual(doc.url.lastPathComponent, "Trip to Gdańsk.md")
+    }
+
+    func testManuallyNamedNoteDoesNotFollowAfterReopen() throws {
+        let url = try makeNote("Travel.md", "# Trip\nbody")
+        let doc = try NoteDocument(url: url)
+        doc.text = "# Trip to Kraków\nbody"
+        doc.save()
+        XCTAssertEqual(doc.url.lastPathComponent, "Travel.md")
+    }
+
     func testAutoNamingCanBeDisabled() throws {
         UserDefaults.standard.set(false, forKey: UserDefaults.autoNameKey)
         defer { UserDefaults.standard.removeObject(forKey: UserDefaults.autoNameKey) }
         let doc = try NoteDocument(url: URL(fileURLWithPath: try createUntitledNote(dir: dir.path)))
-        doc.followsFirstLine = true
         doc.text = "Title"
         doc.save()
         XCTAssertEqual(doc.url.lastPathComponent, "Untitled.md")

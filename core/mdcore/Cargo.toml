@@ -8,4 +8,5 @@ license.workspace = true
 notify-debouncer-full = "0.6"
 tempfile = "3"
 thiserror = "2"
+unicode-normalization = "0.1"
 walkdir = "2"

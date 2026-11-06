@@ -88,6 +88,13 @@ pub fn title_from_text(text: String) -> Option<String> {
     mdcore::files::title_from_text(&text)
 }
 
+/// Whether a note named `file_stem` (no extension) with contents `text` should be
+/// auto-renamed when its first line changes.
+#[uniffi::export]
+pub fn follows_first_line(file_stem: String, text: String) -> bool {
+    mdcore::files::follows_first_line(&file_stem, &text)
+}
+
 fn path_string(p: std::path::PathBuf) -> String {
     p.to_string_lossy().into_owned()
 }

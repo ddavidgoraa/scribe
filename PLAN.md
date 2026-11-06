@@ -41,7 +41,8 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - One root folder; folder tree in sidebar; only `.md` shown; sort by modified date or name.
 - Autosave ~1 s after last keystroke and on file switch; atomic writes (temp + rename).
 - External change (`notify`): no local edits → silent reload keeping caret; local edits → banner "Reload / Keep mine".
-- ⌘N creates `Untitled.md` (`Untitled 2.md`, …); auto-renamed from the first line until renamed manually (toggle in settings).
+- ⌘N creates `Untitled.md` (`Untitled 2.md`, …). Auto-naming is stateless (works after restart): a note follows its first line
+  while its name is `Untitled [N]` or equals the title of its first line (± ` N` suffix); a manual rename to anything else stops it. Toggle in settings.
 - Pasted / dropped images saved to `assets/<note>-<timestamp>.png` next to the note, inserted as relative path.
 - Rename in sidebar.
 
