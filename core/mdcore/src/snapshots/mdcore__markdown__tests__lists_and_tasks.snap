@@ -1,0 +1,12 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"- one\\n- [ ] todo\\n- [x] done\\n\\n1. first\\n   - nested *em*\\n\")"
+---
+ListItem "- one" ["- "]
+ListItem "- [ ] todo" ["- "]
+TaskMarker { checked: false } "[ ]" ["[ ]"]
+ListItem "- [x] done" ["- "]
+TaskMarker { checked: true } "[x]" ["[x]"]
+ListItem "1. first\n   - nested *em*" ["1. "]
+ListItem "- nested *em*" ["- "]
+Emphasis "*em*" ["*", "*"]

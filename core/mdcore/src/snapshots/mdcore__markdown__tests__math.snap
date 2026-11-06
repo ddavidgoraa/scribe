@@ -1,0 +1,6 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"Inline $e^{i\\\\pi}+1=0$ here.\\n\\n$$\\n\\\\int_0^1 x\\\\,dx\\n$$\\n\")"
+---
+Math "$e^{i\\pi}+1=0$" ["$", "$"]
+MathBlock "$$\n\\int_0^1 x\\,dx\n$$" ["$$", "$$"]

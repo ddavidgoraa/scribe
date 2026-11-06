@@ -1,0 +1,7 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"```rust\\nfn main() {}\\n```\\n\\n    indented\\n\\n```\\n```\\n\")"
+---
+CodeBlock "```rust\nfn main() {}\n```" ["```rust", "```"]
+CodeBlock "indented" []
+CodeBlock "```\n```" ["```\n```"]

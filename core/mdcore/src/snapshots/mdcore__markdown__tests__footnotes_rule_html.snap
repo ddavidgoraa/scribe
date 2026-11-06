@@ -1,0 +1,8 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"Text[^1] <br>\\n\\n---\\n\\n[^1]: The note.\\n\")"
+---
+FootnoteReference "[^1]" ["[^", "]"]
+Html "<br>" []
+ThematicBreak "---" ["---"]
+FootnoteDefinition "[^1]: The note." ["[^1]: "]

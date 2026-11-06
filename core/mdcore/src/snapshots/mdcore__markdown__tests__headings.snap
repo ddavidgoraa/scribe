@@ -1,0 +1,7 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"# One\\n\\n### Three ###\\n\\nSetext\\n===\\n\")"
+---
+Heading(1) "# One" ["# "]
+Heading(3) "### Three ###" ["### ", "###"]
+Heading(1) "Setext\n===" ["==="]

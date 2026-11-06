@@ -1,0 +1,8 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"See [the docs](https://x.y \\\"t\\\"), <https://auto.link> and ![alt](img.png) ![](empty.png).\\n\")"
+---
+Link "[the docs](https://x.y \"t\")" ["[", "](https://x.y \"t\")"]
+Link "<https://auto.link>" ["<", ">"]
+Image "![alt](img.png)" ["![", "](img.png)"]
+Image "![](empty.png)" ["![](empty.png)"]

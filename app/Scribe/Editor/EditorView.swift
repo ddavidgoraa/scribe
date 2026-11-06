@@ -1,8 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// Plain-text Markdown editor backed by NSTextView (TextKit 2).
-/// Styling and marker hiding arrive in M2/M3.
+/// Markdown editor backed by NSTextView (TextKit 2). The text is the file verbatim;
+/// `MarkdownHighlighter` only adds attributes. Marker hiding arrives in M3.
 struct EditorView: NSViewRepresentable {
     @Bindable var document: NoteDocument
 
@@ -18,20 +18,22 @@ struct EditorView: NSViewRepresentable {
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.isContinuousSpellCheckingEnabled = true
-        textView.font = .systemFont(ofSize: 16)
+        textView.font = MarkdownTheme.standard.bodyFont
+        textView.typingAttributes = MarkdownTheme.standard.baseAttributes
         textView.textContainerInset = NSSize(width: 40, height: 32)
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         textView.autoresizingMask = [.width]
         textView.textContainer?.widthTracksTextView = true
-        textView.string = document.text
         textView.delegate = context.coordinator
+        textView.textStorage?.delegate = context.coordinator
+        context.coordinator.textView = textView
+        context.coordinator.load(document.text)
 
         let scrollView = NSScrollView()
         scrollView.hasVerticalScroller = true
         scrollView.drawsBackground = false
         scrollView.documentView = textView
-        context.coordinator.textView = textView
         context.coordinator.reloadGeneration = document.reloadGeneration
 
         DispatchQueue.main.async { textView.window?.makeFirstResponder(textView) }
@@ -46,7 +48,7 @@ struct EditorView: NSViewRepresentable {
             // A different note is shown in the same view.
             coordinator.document = document
             coordinator.reloadGeneration = document.reloadGeneration
-            textView.string = document.text
+            coordinator.load(document.text)
             textView.setSelectedRange(NSRange(location: 0, length: 0))
             textView.undoManager?.removeAllActions()
             textView.scrollToBeginningOfDocument(nil)
@@ -54,7 +56,7 @@ struct EditorView: NSViewRepresentable {
             // Reloaded from disk: keep the caret where it was (clamped).
             coordinator.reloadGeneration = document.reloadGeneration
             let selection = textView.selectedRange()
-            textView.string = document.text
+            coordinator.load(document.text)
             let length = (document.text as NSString).length
             let location = min(selection.location, length)
             textView.setSelectedRange(NSRange(location: location, length: min(selection.length, length - location)))
@@ -63,12 +65,34 @@ struct EditorView: NSViewRepresentable {
     }
 
     @MainActor
-    final class Coordinator: NSObject, NSTextViewDelegate {
+    final class Coordinator: NSObject, NSTextViewDelegate, @preconcurrency NSTextStorageDelegate {
         var document: NoteDocument
         weak var textView: NSTextView?
         var reloadGeneration = 0
+        let highlighter = MarkdownHighlighter()
+        /// Set while replacing the whole text, which is restyled in one pass instead.
+        private var isLoading = false
 
         init(document: NoteDocument) { self.document = document }
+
+        /// Replaces the whole text and restyles it.
+        func load(_ text: String) {
+            guard let textView, let storage = textView.textStorage else { return }
+            isLoading = true
+            textView.string = text
+            isLoading = false
+            highlighter.highlightAll(storage)
+        }
+
+        func textStorage(
+            _ textStorage: NSTextStorage,
+            didProcessEditing editedMask: NSTextStorageEditActions,
+            range editedRange: NSRange,
+            changeInLength delta: Int
+        ) {
+            guard editedMask.contains(.editedCharacters), !isLoading else { return }
+            highlighter.textDidChange(textStorage, editedRange: editedRange, changeInLength: delta)
+        }
 
         func textDidChange(_ notification: Notification) {
             guard let textView else { return }

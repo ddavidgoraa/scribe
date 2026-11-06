@@ -68,7 +68,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 
 - [x] **M0** — monorepo, UniFFI "hello" bridge, CI
 - [x] **M1** — library (choose folder, tree, open files), autosave, `notify`
-- [ ] **M2** — syntax styling from Rust spans (markers visible)
+- [x] **M2** — syntax styling from Rust spans (markers visible)
 - [ ] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
 - [ ] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
 - [ ] **M5** — iA typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
@@ -80,6 +80,10 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - MVP has no export except "Copy as HTML" (part of M4).
 
 ## Notes
+
+- Highlighting: full parse on every edit (≈28 ms for 520 KB in release, sub-ms for typical notes), but only the
+  paragraphs whose spans changed are restyled (`SpanDiff`). Revisit with incremental parsing if large notes lag.
+- Code block background is per-character (ragged right edge); proper block decoration comes with M5 typography.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain
   (`dlopen: mis-aligned LINKEDIT string pool`). Revisit when the toolchain updates.

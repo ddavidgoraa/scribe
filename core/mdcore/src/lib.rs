@@ -3,6 +3,7 @@
 mod error;
 pub mod files;
 pub mod library;
+pub mod markdown;
 pub mod watch;
 
 pub use error::{Error, Result};

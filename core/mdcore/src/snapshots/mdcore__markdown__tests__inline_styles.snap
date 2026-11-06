@@ -1,0 +1,11 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"Some *em*, **strong**, ***both***, ~~gone~~ and `code` or ``a ` b``.\\n\")"
+---
+Emphasis "*em*" ["*", "*"]
+Strong "**strong**" ["**", "**"]
+Emphasis "***both***" ["*", "*"]
+Strong "**both**" ["**", "**"]
+Strikethrough "~~gone~~" ["~~", "~~"]
+Code "`code`" ["`", "`"]
+Code "``a ` b``" ["``", "``"]

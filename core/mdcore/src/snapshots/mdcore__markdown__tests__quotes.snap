@@ -1,0 +1,7 @@
+---
+source: mdcore/src/markdown.rs
+expression: "render(\"> quoted **bold**\\n> > nested\\n\")"
+---
+BlockQuote "> quoted **bold**\n> > nested" ["> ", "> "]
+Strong "**bold**" ["**", "**"]
+BlockQuote "> nested" ["> "]

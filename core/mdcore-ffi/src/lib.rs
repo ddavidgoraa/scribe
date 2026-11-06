@@ -127,3 +127,85 @@ impl LibraryWatcher {
         self.inner.lock().unwrap().take();
     }
 }
+
+// MARK: Markdown
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
+pub enum SpanKind {
+    Heading { level: u8 },
+    BlockQuote,
+    CodeBlock,
+    MathBlock,
+    Table,
+    ThematicBreak,
+    ListItem,
+    TaskMarker { checked: bool },
+    Html,
+    FootnoteDefinition,
+    Emphasis,
+    Strong,
+    Strikethrough,
+    Code,
+    Math,
+    Link,
+    Image,
+    FootnoteReference,
+}
+
+impl From<mdcore::markdown::Kind> for SpanKind {
+    fn from(kind: mdcore::markdown::Kind) -> Self {
+        use mdcore::markdown::Kind as K;
+        match kind {
+            K::Heading(level) => Self::Heading { level },
+            K::BlockQuote => Self::BlockQuote,
+            K::CodeBlock => Self::CodeBlock,
+            K::MathBlock => Self::MathBlock,
+            K::Table => Self::Table,
+            K::ThematicBreak => Self::ThematicBreak,
+            K::ListItem => Self::ListItem,
+            K::TaskMarker { checked } => Self::TaskMarker { checked },
+            K::Html => Self::Html,
+            K::FootnoteDefinition => Self::FootnoteDefinition,
+            K::Emphasis => Self::Emphasis,
+            K::Strong => Self::Strong,
+            K::Strikethrough => Self::Strikethrough,
+            K::Code => Self::Code,
+            K::Math => Self::Math,
+            K::Link => Self::Link,
+            K::Image => Self::Image,
+            K::FootnoteReference => Self::FootnoteReference,
+        }
+    }
+}
+
+/// Half-open range in UTF-16 code units (NSString offsets).
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct Utf16Range {
+    pub start: u32,
+    pub end: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct MarkdownSpan {
+    pub kind: SpanKind,
+    pub range: Utf16Range,
+    /// Syntax characters (`**`, `# `, `](url)`, …) inside `range`.
+    pub markers: Vec<Utf16Range>,
+}
+
+fn utf16_range(r: std::ops::Range<usize>) -> Utf16Range {
+    Utf16Range { start: r.start as u32, end: r.end as u32 }
+}
+
+/// Styled spans of `text` in document order (parents before children).
+#[uniffi::export]
+pub fn parse_markdown(text: String) -> Vec<MarkdownSpan> {
+    mdcore::markdown::parse(&text)
+        .into_iter()
+        .map(|s| MarkdownSpan {
+            kind: s.kind.into(),
+            range: utf16_range(s.range),
+            markers: s.markers.into_iter().map(utf16_range).collect(),
+        })
+        .collect()
+}
