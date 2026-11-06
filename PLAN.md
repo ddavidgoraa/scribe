@@ -56,7 +56,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 
 ## Shortcuts
 
-⌘B ⌘I ⌘K (link) ⌘1–6 (headings) ⌘⇧M (math) · ⌘P quick open · ⌘⇧F library search · ⌘F in-file find · ⌘N new file
+⌘B ⌘I ⌘K (link) ⌘1–6 (headings) ⌘⇧M (math) ⌘⇧X (strikethrough) ⌘⇧C (code) ⌥⌘C (copy as HTML) · ⌘P quick open · ⌘⇧F library search · ⌘F in-file find · ⌘N new file
 
 ## Tests
 
@@ -70,7 +70,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - [x] **M1** — library (choose folder, tree, open files), autosave, `notify`
 - [x] **M2** — syntax styling from Rust spans (markers visible)
 - [x] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
-- [ ] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
+- [x] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
 - [ ] **M5** — iA typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
 
 ## Later

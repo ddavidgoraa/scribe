@@ -23,6 +23,12 @@ final class LibraryModel {
         }
     }
     var errorMessage: String?
+    let search = SearchModel()
+    /// UI state: quick open palette (⌘P) and the sidebar search field (⌘⇧F).
+    var isQuickOpenPresented = false
+    var isSearchPresented = false
+    /// Range to select in the open note (search results), consumed by the editor.
+    private(set) var pendingReveal: RevealRequest?
 
     private var watcher: LibraryWatcher?
 
@@ -54,6 +60,7 @@ final class LibraryModel {
         root = resolved
         UserDefaults.standard.set(resolved.path, forKey: Self.rootKey)
         refresh()
+        search.open(root: resolved)
         do {
             watcher = try LibraryWatcher(root: resolved.path, listener: WatchListener { [weak self] _ in
                 Task { @MainActor in self?.handleExternalChanges() }
@@ -74,6 +81,7 @@ final class LibraryModel {
 
     private func handleExternalChanges() {
         refresh()
+        search.refresh()
         if let document, document.checkDisk() {
             closeDocument()
         }
@@ -165,6 +173,28 @@ final class LibraryModel {
         selection = relativePath(of: url)
     }
 
+    /// All notes (relative paths), for quick open.
+    var notePaths: [String] {
+        var paths: [String] = []
+        func walk(_ nodes: [LibraryNode]) {
+            for node in nodes {
+                if let children = node.children { walk(children) } else { paths.append(node.id) }
+            }
+        }
+        walk(nodes)
+        return paths
+    }
+
+    /// Opens a note and selects `range` in it (a search result).
+    func open(_ relativePath: String, revealing range: NSRange? = nil) {
+        selection = relativePath
+        if let range { pendingReveal = RevealRequest(relativePath: relativePath, range: range) }
+    }
+
+    func revealHandled(_ request: RevealRequest) {
+        if pendingReveal == request { pendingReveal = nil }
+    }
+
     func revealInFinder(_ relativePath: String) {
         guard let url = url(for: relativePath) else { return }
         NSWorkspace.shared.activateFileViewerSelecting([url])
@@ -173,6 +203,12 @@ final class LibraryModel {
     private func report(_ error: Error) {
         errorMessage = error.localizedDescription
     }
+}
+
+struct RevealRequest: Equatable {
+    let id = UUID()
+    let relativePath: String
+    let range: NSRange
 }
 
 /// Bridges Rust watcher callbacks (background thread) to a Swift closure.

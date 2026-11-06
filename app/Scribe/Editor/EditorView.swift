@@ -5,11 +5,15 @@ import SwiftUI
 /// `MarkdownHighlighter` only adds attributes (styling, hidden markers, decorations).
 struct EditorView: NSViewRepresentable {
     @Bindable var document: NoteDocument
+    /// Passed explicitly so SwiftUI calls `updateNSView` when they change.
+    var reloadGeneration: Int
+    var reveal: RevealRequest?
+    var onRevealed: (RevealRequest) -> Void = { _ in }
 
     func makeCoordinator() -> Coordinator { Coordinator(document: document) }
 
     func makeNSView(context: Context) -> NSScrollView {
-        let textView = NSTextView(usingTextLayoutManager: true)
+        let textView = MarkdownTextView(usingTextLayoutManager: true)
         textView.isRichText = false
         textView.allowsUndo = true
         textView.usesFindBar = true
@@ -37,7 +41,11 @@ struct EditorView: NSViewRepresentable {
         scrollView.documentView = textView
         context.coordinator.reloadGeneration = document.reloadGeneration
 
-        DispatchQueue.main.async { textView.window?.makeFirstResponder(textView) }
+        let reveal = reveal
+        DispatchQueue.main.async {
+            textView.window?.makeFirstResponder(textView)
+            if let reveal { context.coordinator.handle(reveal, onRevealed: onRevealed) }
+        }
         return scrollView
     }
 
@@ -63,6 +71,9 @@ struct EditorView: NSViewRepresentable {
             textView.setSelectedRange(NSRange(location: location, length: min(selection.length, length - location)))
             textView.undoManager?.removeAllActions()
         }
+        if let reveal {
+            coordinator.handle(reveal, onRevealed: onRevealed)
+        }
     }
 
     @MainActor
@@ -71,7 +82,18 @@ struct EditorView: NSViewRepresentable {
         var document: NoteDocument
         weak var textView: NSTextView?
         var reloadGeneration = 0
+        private var handledReveal: UUID?
         let highlighter = MarkdownHighlighter()
+
+        func handle(_ request: RevealRequest, onRevealed: @escaping (RevealRequest) -> Void) {
+            guard request.id != handledReveal, let textView = textView as? MarkdownTextView else { return }
+            handledReveal = request.id
+            // After SwiftUI's update pass, once the text is in place.
+            DispatchQueue.main.async {
+                textView.reveal(request.range)
+                onRevealed(request)
+            }
+        }
         /// Set while replacing the whole text, which is restyled in one pass instead.
         private var isLoading = false
 

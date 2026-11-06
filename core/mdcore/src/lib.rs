@@ -2,8 +2,10 @@
 
 mod error;
 pub mod files;
+pub mod html;
 pub mod library;
 pub mod markdown;
+pub mod search;
 pub mod watch;
 
 pub use error::{Error, Result};

@@ -5,6 +5,7 @@ struct ContentView: View {
 
     var body: some View {
         @Bindable var library = library
+        @Bindable var search = library.search
         NavigationSplitView {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 180, ideal: 240, max: 400)
@@ -12,6 +13,11 @@ struct ContentView: View {
             detail
         }
         .navigationTitle(title)
+        .searchable(text: $search.query, isPresented: $library.isSearchPresented,
+                    placement: .sidebar, prompt: "Search Library")
+        .sheet(isPresented: $library.isQuickOpenPresented) {
+            QuickOpenView()
+        }
         .alert(
             "Something went wrong",
             isPresented: Binding(get: { library.errorMessage != nil }, set: { if !$0 { library.errorMessage = nil } }),
@@ -36,7 +42,12 @@ struct ContentView: View {
                 if let conflict = document.conflict {
                     ConflictBanner(conflict: conflict, document: document) { library.selection = nil }
                 }
-                EditorView(document: document)
+                EditorView(
+                    document: document,
+                    reloadGeneration: document.reloadGeneration,
+                    reveal: library.pendingReveal.flatMap { library.url(for: $0.relativePath) == document.url ? $0 : nil },
+                    onRevealed: { library.revealHandled($0) }
+                )
             }
         } else {
             ContentUnavailableView {

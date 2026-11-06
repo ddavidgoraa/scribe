@@ -23,6 +23,38 @@ struct ScribeApp: App {
                     .disabled(library.root == nil)
                 Button("Open Library…") { library.chooseLibrary() }
                     .keyboardShortcut("o")
+                Divider()
+                Button("Quick Open…") { library.isQuickOpenPresented = true }
+                    .keyboardShortcut("p")
+                    .disabled(library.root == nil)
+                Button("Search Library…") { library.isSearchPresented = true }
+                    .keyboardShortcut("f", modifiers: [.command, .shift])
+                    .disabled(library.root == nil)
+            }
+            CommandGroup(replacing: .printItem) {}
+            CommandGroup(after: .pasteboard) {
+                Button("Copy as HTML") { send(#selector(MarkdownTextView.copyAsHTML(_:))) }
+                    .keyboardShortcut("c", modifiers: [.command, .option])
+            }
+            TextEditingCommands()
+            CommandMenu("Format") {
+                Button("Bold") { send(#selector(MarkdownTextView.toggleBold(_:))) }
+                    .keyboardShortcut("b")
+                Button("Italic") { send(#selector(MarkdownTextView.toggleItalic(_:))) }
+                    .keyboardShortcut("i")
+                Button("Strikethrough") { send(#selector(MarkdownTextView.toggleStrikethrough(_:))) }
+                    .keyboardShortcut("x", modifiers: [.command, .shift])
+                Button("Code") { send(#selector(MarkdownTextView.toggleInlineCode(_:))) }
+                    .keyboardShortcut("c", modifiers: [.command, .shift]) // ⌘E is "Use Selection for Find"
+                Button("Math") { send(#selector(MarkdownTextView.toggleMath(_:))) }
+                    .keyboardShortcut("m", modifiers: [.command, .shift])
+                Button("Link") { send(#selector(MarkdownTextView.insertMarkdownLink(_:))) }
+                    .keyboardShortcut("k")
+                Divider()
+                ForEach(1...6, id: \.self) { level in
+                    Button("Heading \(level)") { send(#selector(MarkdownTextView.setHeadingLevel(_:)), level) }
+                        .keyboardShortcut(KeyEquivalent(Character("\(level)")))
+                }
             }
             CommandGroup(after: .sidebar) {
                 Picker("Sort Notes By", selection: $library.sort) {
@@ -34,5 +66,10 @@ struct ScribeApp: App {
         Settings {
             SettingsView()
         }
+    }
+
+    /// Sends a formatting action to the focused editor through the responder chain.
+    private func send(_ action: Selector, _ level: Int? = nil) {
+        NSApp.sendAction(action, to: nil, from: level.map { NSNumber(value: $0) })
     }
 }

@@ -6,10 +6,12 @@ license.workspace = true
 
 [dependencies]
 notify-debouncer-full = "0.6"
-pulldown-cmark = { version = "0.13.6", default-features = false }
+nucleo-matcher = "0.3.1"
+pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
 tempfile = "3"
 thiserror = "2"
 unicode-normalization = "0.1"
+unicode-segmentation = "1.13.3"
 walkdir = "2"
 
 [dev-dependencies]

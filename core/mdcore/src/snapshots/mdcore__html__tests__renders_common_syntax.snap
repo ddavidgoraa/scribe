@@ -1,0 +1,17 @@
+---
+source: mdcore/src/html.rs
+expression: "to_html(\"# Title\\n\\n**b** *i* ~~s~~ `c` [l](u)\\n\\n- [x] done\\n\\n| a |\\n|---|\\n| 1 |\\n\\n$x^2$ and\\n\\n$$\\n\\\\int\\n$$\\n\")"
+---
+<h1>Title</h1>
+<p><strong>b</strong> <em>i</em> <del>s</del> <code>c</code> <a href="u">l</a></p>
+<ul>
+<li><input disabled="" type="checkbox" checked=""/>
+done</li>
+</ul>
+<table><thead><tr><th>a</th></tr></thead><tbody>
+<tr><td>1</td></tr>
+</tbody></table>
+<p><span class="math math-inline">x^2</span> and</p>
+<p><span class="math math-display">
+\int
+</span></p>

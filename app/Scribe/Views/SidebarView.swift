@@ -7,7 +7,16 @@ struct SidebarView: View {
 
     var body: some View {
         @Bindable var library = library
-        List(selection: $library.selection) {
+        if library.search.isActive {
+            SearchResultsView()
+        } else {
+            tree
+        }
+    }
+
+    private var tree: some View {
+        @Bindable var library = library
+        return List(selection: $library.selection) {
             OutlineGroup(library.nodes, children: \.children) { node in
                 Label(node.displayName, systemImage: node.isDir ? "folder" : "doc.text")
                     .tag(node.id)

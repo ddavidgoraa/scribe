@@ -209,3 +209,94 @@ pub fn parse_markdown(text: String) -> Vec<MarkdownSpan> {
         })
         .collect()
 }
+
+// MARK: Search
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct FuzzyMatch {
+    /// Index into the candidates passed in.
+    pub index: u32,
+    pub score: u32,
+    /// Matched positions (UTF-16 offsets) for highlighting.
+    pub positions: Vec<u32>,
+}
+
+/// Fuzzy-ranks `candidates` (relative paths) for quick open, best first.
+#[uniffi::export]
+pub fn fuzzy_match(candidates: Vec<String>, query: String, limit: u32) -> Vec<FuzzyMatch> {
+    mdcore::search::fuzzy(&candidates, &query, limit as usize)
+        .into_iter()
+        .map(|m| FuzzyMatch {
+            index: m.index as u32,
+            score: m.score,
+            positions: m.positions.into_iter().map(|p| p as u32).collect(),
+        })
+        .collect()
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct SearchLine {
+    pub line: u32,
+    pub snippet: String,
+    /// Matches within `snippet`.
+    pub ranges: Vec<Utf16Range>,
+    /// First match in the whole note.
+    pub match_range: Utf16Range,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, uniffi::Record)]
+pub struct SearchHit {
+    pub relative_path: String,
+    pub title_match: bool,
+    pub lines: Vec<SearchLine>,
+}
+
+/// Full-text index of a library. Thread-safe; search from a background thread.
+#[derive(uniffi::Object)]
+pub struct SearchIndex {
+    inner: Mutex<mdcore::search::Index>,
+}
+
+#[uniffi::export]
+impl SearchIndex {
+    #[uniffi::constructor]
+    pub fn new(root: String) -> Arc<Self> {
+        Arc::new(Self { inner: Mutex::new(mdcore::search::Index::new(Path::new(&root))) })
+    }
+
+    /// Reloads notes changed on disk since the last refresh.
+    pub fn refresh(&self) -> Result<()> {
+        Ok(self.inner.lock().unwrap().refresh()?)
+    }
+
+    pub fn search(&self, query: String, limit: u32) -> Vec<SearchHit> {
+        self.inner
+            .lock()
+            .unwrap()
+            .search(&query, limit as usize)
+            .into_iter()
+            .map(|h| SearchHit {
+                relative_path: h.relative_path,
+                title_match: h.title_match,
+                lines: h
+                    .lines
+                    .into_iter()
+                    .map(|l| SearchLine {
+                        line: l.line as u32,
+                        snippet: l.snippet,
+                        ranges: l.ranges.into_iter().map(utf16_range).collect(),
+                        match_range: utf16_range(l.offset..l.offset + l.length),
+                    })
+                    .collect(),
+            })
+            .collect()
+    }
+}
+
+// MARK: HTML
+
+/// Renders Markdown to an HTML fragment.
+#[uniffi::export]
+pub fn markdown_to_html(markdown: String) -> String {
+    mdcore::html::to_html(&markdown)
+}
