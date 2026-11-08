@@ -1,13 +1,16 @@
 name: CI
 
+# Tests run on pull requests only (macOS runner minutes count 10x in private repos).
+# Pushing a v* tag builds and publishes the DMG without re-running the tests.
 on:
-  push:
-    branches: [main]
-    tags: ["v*"]
   pull_request:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
 
 jobs:
   test:
+    if: github.event_name != 'push'
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +27,6 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: test
     runs-on: macos-15
     permissions:
       contents: write
