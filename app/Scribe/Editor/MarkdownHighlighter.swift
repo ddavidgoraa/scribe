@@ -100,14 +100,16 @@ final class MarkdownHighlighter {
         case .heading(let level):
             storage.addAttribute(.font, value: theme.headingFont(level: level), range: r)
         case .emphasis:
-            addTrait(.italicFontMask, to: storage, in: r)
+            addTrait(italic: true, to: storage, in: r)
         case .strong:
-            addTrait(.boldFontMask, to: storage, in: r)
+            addTrait(bold: true, to: storage, in: r)
         case .strikethrough:
             storage.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: r)
             storage.addAttribute(.foregroundColor, value: theme.secondaryColor, range: r)
-        case .code, .codeBlock:
+        case .code:
             storage.addAttributes([.font: theme.monoFont, .backgroundColor: theme.codeBackground], range: r)
+        case .codeBlock:
+            storage.addAttributes([.font: theme.monoFont, .scribeBlockBackground: theme.codeBackground], range: r)
         case .math, .mathBlock:
             storage.addAttributes([.font: theme.monoFont, .foregroundColor: theme.mathColor], range: r)
         case .table:
@@ -228,6 +230,7 @@ final class MarkdownHighlighter {
         guard r.length > 0 else { return }
         storage.addAttributes(MarkdownTheme.hiddenAttributes, range: r)
         storage.removeAttribute(.backgroundColor, range: r)
+        storage.removeAttribute(.scribeBlockBackground, range: r)
     }
 
     private func indent(_ range: NSRange, by amount: CGFloat, in storage: NSTextStorage, clip: NSRange) {
@@ -259,10 +262,10 @@ final class MarkdownHighlighter {
         return CGSize(width: (size.width * scale).rounded(), height: (size.height * scale).rounded())
     }
 
-    private func addTrait(_ trait: NSFontTraitMask, to storage: NSTextStorage, in range: NSRange) {
+    private func addTrait(bold: Bool = false, italic: Bool = false, to storage: NSTextStorage, in range: NSRange) {
         storage.enumerateAttribute(.font, in: range) { value, subrange, _ in
             let font = value as? NSFont ?? theme.bodyFont
-            storage.addAttribute(.font, value: NSFontManager.shared.convert(font, toHaveTrait: trait), range: subrange)
+            storage.addAttribute(.font, value: EditorFonts.adding(bold: bold, italic: italic, to: font), range: subrange)
         }
     }
 }

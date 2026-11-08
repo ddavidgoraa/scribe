@@ -2,28 +2,37 @@
 
 A minimal, distraction-free Markdown editor for macOS with LaTeX math, inspired by iA Writer.
 
-- Live preview editing (Typora-style): markup hides until your cursor touches it
-- Math via `$…$` and `$$…$$`
-- Your notes are plain `.md` files in a folder you choose
+- **Live preview** (Typora-style): Markdown syntax hides until your cursor touches it — the file stays plain text
+- **Math** with `$…$` and `$$…$$`, rendered natively ([SwiftMath](https://github.com/mgriebling/SwiftMath)); live preview while editing
+- **iA Writer typography**: iA Writer Duo / Mono / Quattro, a ~64 character column, light & dark
+- **Focus mode** (⌘D) and **typewriter mode** (⌘T)
+- **Library**: your notes are `.md` files in a folder you choose; autosave, external changes picked up
+- **Quick open** (⌘P) and **full-text search** (⌘⇧F, ignores case and diacritics)
+- Formatting shortcuts (⌘B ⌘I ⌘K ⌘1–6 ⌘⇧M …), **Copy as HTML** (⌥⌘C)
 
-> Status: early development (milestone M0). See [PLAN.md](PLAN.md).
+> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap.
 
-## Requirements
+## Install
 
-- macOS 14+ on Apple Silicon
-- Xcode 16+, Rust (stable) with `aarch64-apple-darwin`, [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+Download `Scribe-<version>-arm64.dmg` from Releases (macOS 14+, Apple Silicon) and drag Scribe to Applications.
+
+The app is not notarized yet. On first launch macOS will block it: open **System Settings → Privacy & Security**
+and click **Open Anyway**, or run `xattr -dr com.apple.quarantine /Applications/Scribe.app`.
 
 ## Build
 
+Requirements: Xcode 16+, Rust (stable) with `aarch64-apple-darwin`, [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+
 ```sh
-make test   # Rust + Swift tests
-make run    # build and launch Scribe.app
+make test               # Rust + Swift tests
+make run                # build and launch Scribe.app
+./scripts/make-dmg.sh   # Release build → dist/Scribe-<version>-arm64.dmg
 ```
 
-`make core` builds the Rust core (`core/`) into an XCFramework and generates Swift
-bindings via UniFFI into `app/Packages/MdCore`. `make project` regenerates
-`app/Scribe.xcodeproj` from `app/project.yml`.
+The Rust core (`core/`) parses Markdown, indexes and searches the library and watches files; it is bridged to
+the Swift app (`app/`) with UniFFI (`make core`). `app/Scribe.xcodeproj` is generated from `app/project.yml`.
 
 ## License
 
-MIT
+MIT. Bundled fonts: iA Writer Duo, Mono and Quattro © Information Architects Inc., SIL Open Font License 1.1
+(see `app/Scribe/Resources/Fonts/`).

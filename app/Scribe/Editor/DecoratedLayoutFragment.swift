@@ -1,20 +1,70 @@
 import AppKit
 
-/// Draws `Decoration`s (rendered math, images) over the hidden source of a paragraph.
+/// One paragraph of the editor. Draws, around the text:
+/// - code block backgrounds spanning the column,
+/// - `Decoration`s (rendered math, images) over hidden source,
+/// - dimming when focus mode highlights another paragraph.
 final class DecoratedLayoutFragment: NSTextLayoutFragment {
     private static let overflow: CGFloat = 24
+    static let blockInset: CGFloat = 10
+    static let dimmedAlpha: CGFloat = 0.3
+
+    private var textView: MarkdownTextView? {
+        textLayoutManager?.textContainer?.textView as? MarkdownTextView
+    }
+
+    private var columnWidth: CGFloat {
+        textLayoutManager?.textContainer?.size.width ?? layoutFragmentFrame.width
+    }
 
     override var renderingSurfaceBounds: CGRect {
         // A line of hidden characters is ~0 wide, but its decoration spans the column;
         // inline formulas may also be taller than their line.
-        let width = textLayoutManager?.textContainer?.size.width ?? layoutFragmentFrame.width
-        return super.renderingSurfaceBounds
-            .union(CGRect(x: 0, y: 0, width: width, height: layoutFragmentFrame.height))
+        super.renderingSurfaceBounds
+            .union(CGRect(x: -Self.blockInset, y: 0, width: columnWidth + 2 * Self.blockInset,
+                          height: layoutFragmentFrame.height))
             .insetBy(dx: 0, dy: -Self.overflow)
     }
 
+    /// Character range of this paragraph in the document.
+    private var characterRange: NSRange? {
+        guard let tlm = textLayoutManager, let range = rangeInElement as NSTextRange? else { return nil }
+        let start = tlm.offset(from: tlm.documentRange.location, to: range.location)
+        let length = tlm.offset(from: range.location, to: range.endLocation)
+        return NSRange(location: start, length: length)
+    }
+
     override func draw(at point: CGPoint, in context: CGContext) {
+        let dimmed = characterRange.map { textView?.isDimmed($0) ?? false } ?? false
+        if dimmed {
+            context.saveGState()
+            context.setAlpha(Self.dimmedAlpha)
+            context.beginTransparencyLayer(auxiliaryInfo: nil)
+        }
+        defer {
+            if dimmed {
+                context.endTransparencyLayer()
+                context.restoreGState()
+            }
+        }
+        drawBlockBackground(at: point, in: context)
         super.draw(at: point, in: context)
+        drawDecorations(at: point, in: context)
+    }
+
+    private func drawBlockBackground(at point: CGPoint, in context: CGContext) {
+        guard let line = textLineFragments.first, line.characterRange.length > 0,
+              line.characterRange.location < line.attributedString.length,
+              let color = line.attributedString.attribute(.scribeBlockBackground, at: line.characterRange.location,
+                                                          effectiveRange: nil) as? NSColor
+        else { return }
+        let rect = CGRect(x: point.x - Self.blockInset, y: point.y,
+                          width: columnWidth + 2 * Self.blockInset, height: layoutFragmentFrame.height)
+        context.setFillColor(resolved(color))
+        context.fill(rect)
+    }
+
+    private func drawDecorations(at point: CGPoint, in context: CGContext) {
         var decorations: [(Decoration, Int, NSTextLineFragment)] = []
         for line in textLineFragments {
             let string = line.attributedString
@@ -29,19 +79,19 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: true)
         defer { NSGraphicsContext.restoreGraphicsState() }
-        let tint = textColor()
+        let tint = resolved(.labelColor)
         for (decoration, index, line) in decorations {
             draw(decoration, at: index, in: line, origin: point, tint: tint, context: context)
         }
     }
 
-    /// The label color as the text view shows it (its own appearance, not the app's).
-    private func textColor() -> CGColor {
+    /// A dynamic color as the text view shows it (its own appearance, not the app's).
+    private func resolved(_ color: NSColor) -> CGColor {
         let appearance = textLayoutManager?.textContainer?.textView?.effectiveAppearance
             ?? NSApp?.effectiveAppearance ?? NSAppearance(named: .aqua)!
-        var color = NSColor.black.cgColor
-        appearance.performAsCurrentDrawingAppearance { color = NSColor.labelColor.cgColor }
-        return color
+        var cgColor = NSColor.black.cgColor
+        appearance.performAsCurrentDrawingAppearance { cgColor = color.cgColor }
+        return cgColor
     }
 
     private func draw(_ decoration: Decoration, at index: Int, in line: NSTextLineFragment,

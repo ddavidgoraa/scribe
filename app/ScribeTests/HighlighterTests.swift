@@ -48,8 +48,8 @@ final class HighlighterTests: XCTestCase {
 
     func testCodeAndMathAreMonospaced() {
         let s = styled("`x` and $y$", caret: 9)
-        XCTAssertTrue(font(s, at: 1).isFixedPitch)
-        XCTAssertTrue(font(s, at: 9).isFixedPitch)
+        XCTAssertTrue(font(s, at: 1).isCodeFont)
+        XCTAssertTrue(font(s, at: 9).isCodeFont)
         XCTAssertEqual(color(s, at: 9), theme.mathColor)
         XCTAssertEqual(color(s, at: 8), theme.markerColor)
     }
@@ -82,8 +82,13 @@ final class HighlighterTests: XCTestCase {
         highlighter.highlightAll(storage)
         storage.replaceCharacters(in: NSRange(location: 0, length: 0), with: "```\n")
         highlighter.textDidChange(storage, editedRange: NSRange(location: 0, length: 4), changeInLength: 4)
-        XCTAssertTrue(font(storage, at: storage.length - 1).isFixedPitch, "unclosed fence extends to the end")
+        XCTAssertTrue(font(storage, at: storage.length - 1).isCodeFont, "unclosed fence extends to the end")
     }
+}
+
+private extension NSFont {
+    /// iA Writer Mono doesn't set the fixed-pitch flag (some glyphs are double width).
+    var isCodeFont: Bool { isFixedPitch || fontName.hasPrefix("iAWriterMono") }
 }
 
 final class SpanDiffTests: XCTestCase {
@@ -119,5 +124,48 @@ final class SpanDiffTests: XCTestCase {
         let old = [span(.codeBlock, 0, 100)]
         let dirty = SpanDiff.dirtyRange(old: old, new: [], edited: NSRange(location: 0, length: 0), delta: -3)
         XCTAssertEqual(dirty, NSRange(location: 0, length: 97), "old span in new coordinates")
+    }
+}
+
+@MainActor
+final class ThemeTests: XCTestCase {
+    func testBundledFontsLoadWithAllStyles() {
+        for family in EditorFont.allCases {
+            XCTAssertTrue(family.font(size: 16).fontName.hasPrefix("iAWriter"), "\(family) regular")
+            XCTAssertTrue(family.font(size: 16, bold: true, italic: true).fontName.hasSuffix("BoldItalic"))
+        }
+    }
+
+    func testTraitsKeepTheFamily() {
+        let duo = EditorFont.duo.font(size: 16)
+        XCTAssertEqual(EditorFonts.adding(bold: true, to: duo).fontName, "iAWriterDuoS-Bold")
+        let bold = EditorFonts.adding(bold: true, to: duo)
+        XCTAssertEqual(EditorFonts.adding(italic: true, to: bold).fontName, "iAWriterDuoS-BoldItalic")
+    }
+
+    func testColumnIsAbout64Characters() {
+        let theme = MarkdownTheme(font: .duo, fontSize: 16)
+        XCTAssertGreaterThan(theme.columnWidth, 450)
+        XCTAssertLessThan(theme.columnWidth, 700)
+        XCTAssertGreaterThan(MarkdownTheme(font: .duo, fontSize: 20).columnWidth, theme.columnWidth)
+    }
+
+    func testFocusBlockSpansLinesBetweenBlankLines() {
+        let text = "first\n\nline a\nline b\n\nlast" as NSString
+        let block = MarkdownTextView.block(around: 10, in: text)
+        XCTAssertEqual(text.substring(with: block), "line a\nline b\n")
+        XCTAssertEqual(text.substring(with: MarkdownTextView.block(around: 6, in: text)), "\n", "blank line is its own block")
+        XCTAssertEqual(MarkdownTextView.block(around: 0, in: ""), NSRange(location: 0, length: 0))
+    }
+
+    func testFocusDimsOtherParagraphs() {
+        let view = MarkdownTextView(usingTextLayoutManager: true)
+        view.string = "one\n\ntwo"
+        view.setSelectedRange(NSRange(location: 6, length: 0))
+        view.focusMode = true
+        XCTAssertFalse(view.isDimmed(NSRange(location: 5, length: 3)))
+        XCTAssertTrue(view.isDimmed(NSRange(location: 0, length: 4)))
+        view.focusMode = false
+        XCTAssertFalse(view.isDimmed(NSRange(location: 0, length: 4)))
     }
 }

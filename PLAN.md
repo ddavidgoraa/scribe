@@ -52,7 +52,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - Centered column ~64 chars, line height 1.5; headings bold and slightly larger.
 - Light/dark following system; blue caret; minimal chrome; sidebar toggle ⌘⇧L.
 - MVP settings: font + size.
-- MVP: typewriter scrolling + paragraph focus.
+- MVP: typewriter scrolling (⌘T) + paragraph focus (⌘D); sidebar ⌘⇧L; text size ⌘+ / ⌘− / ⌘0.
 
 ## Shortcuts
 
@@ -71,7 +71,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - [x] **M2** — syntax styling from Rust spans (markers visible)
 - [x] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
 - [x] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
-- [ ] **M5** — iA typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
+- [x] **M5** — iA typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
 
 ## Later
 
@@ -86,7 +86,10 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - Live preview never changes the text: hidden markers get a 0.01 pt clear font; math/images are drawn by
   `DecoratedLayoutFragment` (TextKit 2) over hidden source, space reserved by `.kern` (inline) or line height
   (blocks). Math is rendered by SwiftMath as a black mask and tinted with the view's label color.
-- Code block background is per-character (ragged right edge); proper block decoration comes with M5 typography.
+- Code blocks use a line-spanning background drawn by `DecoratedLayoutFragment` (`.scribeBlockBackground`).
+- Focus mode dims every paragraph fragment outside the caret's block (lines between blank lines) by drawing it
+  at 30% alpha; typewriter mode pads the text by half a screen and scrolls the caret line to the middle.
+- Release: `scripts/make-dmg.sh` (also used by CI on `v*` tags) builds an ad-hoc signed, non-notarized DMG.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain
   (`dlopen: mis-aligned LINKEDIT string pool`). Revisit when the toolchain updates.

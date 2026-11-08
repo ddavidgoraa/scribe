@@ -3,6 +3,13 @@ import SwiftUI
 @main
 struct ScribeApp: App {
     @State private var library = LibraryModel()
+    @AppStorage(EditorSettings.typewriterKey) private var typewriterMode = false
+    @AppStorage(EditorSettings.focusKey) private var focusMode = false
+    @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
+
+    init() {
+        EditorFonts.registerBundledFonts()
+    }
 
     var body: some Scene {
         Window("Scribe", id: "main") {
@@ -57,6 +64,20 @@ struct ScribeApp: App {
                 }
             }
             CommandGroup(after: .sidebar) {
+                Button("Show/Hide Library") { library.toggleSidebar() }
+                    .keyboardShortcut("l", modifiers: [.command, .shift])
+                Toggle("Focus Mode", isOn: $focusMode)
+                    .keyboardShortcut("d")
+                Toggle("Typewriter Mode", isOn: $typewriterMode)
+                    .keyboardShortcut("t")
+                Divider()
+                Button("Bigger Text") { fontSize = min(EditorSettings.fontSizes.upperBound, fontSize + 1) }
+                    .keyboardShortcut("+")
+                Button("Smaller Text") { fontSize = max(EditorSettings.fontSizes.lowerBound, fontSize - 1) }
+                    .keyboardShortcut("-")
+                Button("Actual Size") { fontSize = 16 }
+                    .keyboardShortcut("0")
+                Divider()
                 Picker("Sort Notes By", selection: $library.sort) {
                     ForEach(LibrarySort.allCases) { Text($0.title).tag($0) }
                 }

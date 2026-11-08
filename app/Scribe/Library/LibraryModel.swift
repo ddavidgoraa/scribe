@@ -1,4 +1,5 @@
 import AppKit
+import SwiftUI
 import MdCore
 import Observation
 
@@ -27,6 +28,11 @@ final class LibraryModel {
     /// UI state: quick open palette (⌘P) and the sidebar search field (⌘⇧F).
     var isQuickOpenPresented = false
     var isSearchPresented = false
+    var columnVisibility: NavigationSplitViewVisibility = .automatic
+
+    func toggleSidebar() {
+        columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+    }
     /// Range to select in the open note (search results), consumed by the editor.
     private(set) var pendingReveal: RevealRequest?
 

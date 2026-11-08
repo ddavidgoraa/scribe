@@ -3,6 +3,8 @@ import AppKit
 extension NSAttributedString.Key {
     /// A `Decoration` drawn by `DecoratedLayoutFragment` at the attributed character.
     static let scribeDecoration = NSAttributedString.Key("ScribeDecoration")
+    /// An `NSColor` filling whole lines behind the text (code blocks).
+    static let scribeBlockBackground = NSAttributedString.Key("ScribeBlockBackground")
 }
 
 /// Something drawn over hidden source text: rendered math or an image.

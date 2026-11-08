@@ -2,11 +2,15 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(LibraryModel.self) private var library
+    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.duo
+    @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
+    @AppStorage(EditorSettings.typewriterKey) private var typewriterMode = false
+    @AppStorage(EditorSettings.focusKey) private var focusMode = false
 
     var body: some View {
         @Bindable var library = library
         @Bindable var search = library.search
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $library.columnVisibility) {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 180, ideal: 240, max: 400)
         } detail: {
@@ -46,7 +50,10 @@ struct ContentView: View {
                     document: document,
                     reloadGeneration: document.reloadGeneration,
                     reveal: library.pendingReveal.flatMap { library.url(for: $0.relativePath) == document.url ? $0 : nil },
-                    onRevealed: { library.revealHandled($0) }
+                    onRevealed: { library.revealHandled($0) },
+                    theme: MarkdownTheme(font: font, fontSize: CGFloat(fontSize)),
+                    typewriterMode: typewriterMode,
+                    focusMode: focusMode
                 )
             }
         } else {

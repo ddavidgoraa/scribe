@@ -35,18 +35,8 @@ jobs:
           targets: aarch64-apple-darwin
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Build Release app
-        run: |
-          make core project
-          xcodebuild -project app/Scribe.xcodeproj -scheme Scribe -configuration Release \
-            -destination 'platform=macOS,arch=arm64' -derivedDataPath app/build build
-      - name: Package DMG
-        run: |
-          mkdir -p dist/dmg
-          cp -R app/build/Build/Products/Release/Scribe.app dist/dmg/
-          ln -s /Applications dist/dmg/Applications
-          hdiutil create -volname Scribe -srcfolder dist/dmg -ov -format UDZO \
-            "dist/Scribe-${GITHUB_REF_NAME}-arm64.dmg"
+      - name: Build DMG
+        run: ./scripts/make-dmg.sh "${GITHUB_REF_NAME#v}"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}

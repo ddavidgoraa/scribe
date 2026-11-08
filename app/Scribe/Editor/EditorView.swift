@@ -9,6 +9,9 @@ struct EditorView: NSViewRepresentable {
     var reloadGeneration: Int
     var reveal: RevealRequest?
     var onRevealed: (RevealRequest) -> Void = { _ in }
+    var theme: MarkdownTheme = .current()
+    var typewriterMode = false
+    var focusMode = false
 
     func makeCoordinator() -> Coordinator { Coordinator(document: document) }
 
@@ -22,8 +25,11 @@ struct EditorView: NSViewRepresentable {
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.isContinuousSpellCheckingEnabled = true
-        textView.font = MarkdownTheme.standard.bodyFont
-        textView.typingAttributes = MarkdownTheme.standard.baseAttributes
+        context.coordinator.highlighter.theme = theme
+        textView.theme = theme
+        textView.font = theme.bodyFont
+        textView.typingAttributes = theme.baseAttributes
+        textView.insertionPointColor = MarkdownTheme.caretColor
         textView.textContainerInset = NSSize(width: 40, height: 32)
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
@@ -33,6 +39,9 @@ struct EditorView: NSViewRepresentable {
         textView.textStorage?.delegate = context.coordinator
         textView.textLayoutManager?.delegate = context.coordinator
         context.coordinator.textView = textView
+        textView.onColumnWidthChange = { [weak coordinator = context.coordinator] width in
+            coordinator?.columnWidthChanged(width)
+        }
         context.coordinator.load(document.text)
 
         let scrollView = NSScrollView()
@@ -40,6 +49,8 @@ struct EditorView: NSViewRepresentable {
         scrollView.drawsBackground = false
         scrollView.documentView = textView
         context.coordinator.reloadGeneration = document.reloadGeneration
+        textView.typewriterMode = typewriterMode
+        textView.focusMode = focusMode
 
         let reveal = reveal
         DispatchQueue.main.async {
@@ -73,6 +84,16 @@ struct EditorView: NSViewRepresentable {
         }
         if let reveal {
             coordinator.handle(reveal, onRevealed: onRevealed)
+        }
+        if let textView = textView as? MarkdownTextView {
+            if textView.theme != theme {
+                coordinator.highlighter.theme = theme
+                textView.theme = theme
+                textView.typingAttributes = theme.baseAttributes
+                if let storage = textView.textStorage { coordinator.highlighter.highlightAll(storage) }
+            }
+            textView.typewriterMode = typewriterMode
+            textView.focusMode = focusMode
         }
     }
 
@@ -113,6 +134,15 @@ struct EditorView: NSViewRepresentable {
         func textViewDidChangeSelection(_ notification: Notification) {
             guard !isLoading, let textView, let storage = textView.textStorage else { return }
             highlighter.selectionDidChange(storage, selection: textView.selectedRange())
+            (textView as? MarkdownTextView)?.selectionDidChange()
+        }
+
+        /// Images are fitted to the text column.
+        func columnWidthChanged(_ width: CGFloat) {
+            let size = CGSize(width: max(200, width), height: 420)
+            guard size != highlighter.maxImageSize else { return }
+            highlighter.maxImageSize = size
+            if let storage = textView?.textStorage, storage.length > 0 { highlighter.highlightAll(storage) }
         }
 
         /// Never type with the attributes of hidden markers (invisible, 0.01 pt).
