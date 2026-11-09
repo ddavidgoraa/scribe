@@ -89,6 +89,8 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - Code blocks use a line-spanning background drawn by `DecoratedLayoutFragment` (`.scribeBlockBackground`).
 - Focus mode dims every paragraph fragment outside the caret's block (lines between blank lines) by drawing it
   at 30% alpha; typewriter mode pads the text by half a screen and scrolls the caret line to the middle.
+- Image paste/drop (`ImageInsertion`): image data → `assets/<note-slug>-<yyyyMMdd-HHmmss>.png`; files from outside the
+  library are copied to `assets/`, files inside are linked relative to the note; inserted on their own line.
 - Release: `scripts/make-dmg.sh` (also used by CI on `v*` tags) builds an ad-hoc signed, non-notarized DMG.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain

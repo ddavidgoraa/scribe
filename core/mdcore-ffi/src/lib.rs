@@ -88,6 +88,24 @@ pub fn title_from_text(text: String) -> Option<String> {
     mdcore::files::title_from_text(&text)
 }
 
+/// Saves pasted image data as `assets/<note>-<timestamp>.<ext>` beside the note; returns its path.
+#[uniffi::export]
+pub fn save_asset(note_path: String, data: Vec<u8>, extension: String, timestamp: String) -> Result<String> {
+    Ok(path_string(mdcore::files::save_asset(Path::new(&note_path), &data, &extension, &timestamp)?))
+}
+
+/// Copies an image file into the note's `assets/` folder; returns the copy's path.
+#[uniffi::export]
+pub fn import_asset(note_path: String, source_path: String, timestamp: String) -> Result<String> {
+    Ok(path_string(mdcore::files::import_asset(Path::new(&note_path), Path::new(&source_path), &timestamp)?))
+}
+
+/// Relative, link-safe path from `from_dir` to `target` for Markdown links.
+#[uniffi::export]
+pub fn relative_link(from_dir: String, target: String) -> String {
+    mdcore::files::relative_link(Path::new(&from_dir), Path::new(&target))
+}
+
 /// Whether a note named `file_stem` (no extension) with contents `text` should be
 /// auto-renamed when its first line changes.
 #[uniffi::export]

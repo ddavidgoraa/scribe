@@ -51,6 +51,7 @@ struct ContentView: View {
                     reloadGeneration: document.reloadGeneration,
                     reveal: library.pendingReveal.flatMap { library.url(for: $0.relativePath) == document.url ? $0 : nil },
                     onRevealed: { library.revealHandled($0) },
+                    libraryRoot: library.root,
                     theme: MarkdownTheme(font: font, fontSize: CGFloat(fontSize)),
                     typewriterMode: typewriterMode,
                     focusMode: focusMode

@@ -9,6 +9,7 @@ struct EditorView: NSViewRepresentable {
     var reloadGeneration: Int
     var reveal: RevealRequest?
     var onRevealed: (RevealRequest) -> Void = { _ in }
+    var libraryRoot: URL?
     var theme: MarkdownTheme = .current()
     var typewriterMode = false
     var focusMode = false
@@ -39,6 +40,8 @@ struct EditorView: NSViewRepresentable {
         textView.textStorage?.delegate = context.coordinator
         textView.textLayoutManager?.delegate = context.coordinator
         context.coordinator.textView = textView
+        textView.noteURL = { [weak coordinator = context.coordinator] in coordinator?.document.url }
+        textView.libraryRoot = libraryRoot
         textView.onColumnWidthChange = { [weak coordinator = context.coordinator] width in
             coordinator?.columnWidthChanged(width)
         }
@@ -94,6 +97,7 @@ struct EditorView: NSViewRepresentable {
             }
             textView.typewriterMode = typewriterMode
             textView.focusMode = focusMode
+            textView.libraryRoot = libraryRoot
         }
     }
 

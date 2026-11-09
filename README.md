@@ -8,9 +8,10 @@ A minimal, distraction-free Markdown editor for macOS with LaTeX math, inspired 
 - **Focus mode** (⌘D) and **typewriter mode** (⌘T)
 - **Library**: your notes are `.md` files in a folder you choose; autosave, external changes picked up
 - **Quick open** (⌘P) and **full-text search** (⌘⇧F, ignores case and diacritics)
+- **Images**: paste or drag them in — they're saved to an `assets` folder next to the note and previewed inline
 - Formatting shortcuts (⌘B ⌘I ⌘K ⌘1–6 ⌘⇧M …), **Copy as HTML** (⌥⌘C)
 
-> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap. User manual (Polish): [docs/INSTRUKCJA.md](docs/INSTRUKCJA.md).
+> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap. User manual: [docs/MANUAL.md](docs/MANUAL.md).
 
 ## Install
 

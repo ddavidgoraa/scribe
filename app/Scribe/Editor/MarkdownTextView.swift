@@ -40,6 +40,53 @@ final class MarkdownTextView: NSTextView {
 
     private var nsString: NSString { string as NSString }
 
+    // MARK: Images (paste and drop)
+
+    /// The open note's file (it can change when the note is renamed).
+    var noteURL: () -> URL? = { nil }
+    /// The library folder: images already inside it are linked, not copied.
+    var libraryRoot: URL?
+
+    override func paste(_ sender: Any?) {
+        if insertImages(from: .general, replacing: selectedRange()) { return }
+        super.paste(sender)
+    }
+
+    override var acceptableDragTypes: [NSPasteboard.PasteboardType] {
+        super.acceptableDragTypes + [.fileURL, .png, .tiff]
+    }
+
+    override func dragOperation(for dragInfo: any NSDraggingInfo, type: NSPasteboard.PasteboardType) -> NSDragOperation {
+        if noteURL() != nil, ImageInsertion.containsImages(dragInfo.draggingPasteboard) { return .copy }
+        return super.dragOperation(for: dragInfo, type: type)
+    }
+
+    override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
+        guard noteURL() != nil, ImageInsertion.containsImages(sender.draggingPasteboard) else {
+            return super.performDragOperation(sender)
+        }
+        let index = characterIndexForInsertion(at: convert(sender.draggingLocation, from: nil))
+        window?.makeFirstResponder(self)
+        return insertImages(from: sender.draggingPasteboard, replacing: NSRange(location: index, length: 0))
+    }
+
+    /// Saves/links images from `pasteboard` and inserts their Markdown (one undoable change).
+    /// Returns `false` if the pasteboard holds no images.
+    @discardableResult
+    func insertImages(from pasteboard: NSPasteboard, replacing range: NSRange) -> Bool {
+        guard let note = noteURL(), ImageInsertion.containsImages(pasteboard) else { return false }
+        do {
+            let images = try ImageInsertion.images(from: pasteboard, note: note, libraryRoot: libraryRoot)
+            guard !images.isEmpty else { return false }
+            let markdown = ImageInsertion.markdown(images, in: nsString, replacing: range)
+            let end = range.location + (markdown as NSString).length
+            apply(TextEdit(range: range, replacement: markdown, selection: NSRange(location: end, length: 0)))
+        } catch {
+            presentError(error)
+        }
+        return true
+    }
+
     // MARK: Column, typewriter and focus
 
     var theme: MarkdownTheme = .standard {

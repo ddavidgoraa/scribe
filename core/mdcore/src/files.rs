@@ -110,6 +110,86 @@ pub fn rename(path: &Path, new_stem: &str) -> Result<PathBuf> {
     unreachable!()
 }
 
+// MARK: Assets (pasted / dropped images)
+
+const ASSETS_DIR: &str = "assets";
+
+/// Saves image `bytes` as `assets/<note>-<timestamp>.<ext>` next to `note`.
+/// `timestamp` is supplied by the caller (local time, e.g. `20261109-143005`).
+pub fn save_asset(note: &Path, bytes: &[u8], extension: &str, timestamp: &str) -> Result<PathBuf> {
+    let (path, mut file) = create_asset_file(note, extension, timestamp)?;
+    file.write_all(bytes).at(&path)?;
+    Ok(path)
+}
+
+/// Copies the file at `source` into the note's `assets/` folder (same naming as `save_asset`).
+pub fn import_asset(note: &Path, source: &Path, timestamp: &str) -> Result<PathBuf> {
+    let extension = source
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(str::to_lowercase)
+        .unwrap_or_else(|| "png".into());
+    let (path, file) = create_asset_file(note, &extension, timestamp)?;
+    drop(file);
+    fs::copy(source, &path).at(source)?;
+    Ok(path)
+}
+
+/// Reserves a fresh, unique file in `<note dir>/assets/`.
+fn create_asset_file(note: &Path, extension: &str, timestamp: &str) -> Result<(PathBuf, fs::File)> {
+    let dir = note.parent().unwrap_or(Path::new(".")).join(ASSETS_DIR);
+    fs::create_dir_all(&dir).at(&dir)?;
+    let stem = note.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+    let base = format!("{}-{}", slug(stem), slug(timestamp));
+    let ext = extension.trim_start_matches('.').to_lowercase();
+    for n in 1.. {
+        let name = if n == 1 { format!("{base}.{ext}") } else { format!("{base}-{n}.{ext}") };
+        let path = dir.join(name);
+        match OpenOptions::new().write(true).create_new(true).open(&path) {
+            Ok(file) => return Ok((path, file)),
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(Error::Io { path, source: e }),
+        }
+    }
+    unreachable!()
+}
+
+/// File-name-friendly form: letters, digits, `-`, `_`; whitespace becomes `-`.
+fn slug(raw: &str) -> String {
+    let mut out = String::new();
+    for c in raw.nfc() {
+        if c.is_alphanumeric() || c == '_' {
+            out.push(c);
+        } else if (c.is_whitespace() || c == '-' || c == '.') && !out.ends_with('-') && !out.is_empty() {
+            out.push('-');
+        }
+    }
+    let trimmed = out.trim_end_matches('-').to_string();
+    if trimmed.is_empty() { "image".into() } else { trimmed }
+}
+
+/// Markdown link target from `from_dir` to `target`: relative, `/`-separated,
+/// with characters that would break the link (spaces, parentheses, `<>`) escaped.
+pub fn relative_link(from_dir: &Path, target: &Path) -> String {
+    let from: Vec<_> = from_dir.components().collect();
+    let to: Vec<_> = target.components().collect();
+    let common = from.iter().zip(&to).take_while(|(a, b)| a == b).count();
+    let mut parts: Vec<String> = std::iter::repeat_n("..".to_string(), from.len() - common).collect();
+    parts.extend(to[common..].iter().map(|c| c.as_os_str().to_string_lossy().into_owned()));
+    let mut link = String::new();
+    for c in parts.join("/").chars() {
+        match c {
+            ' ' => link.push_str("%20"),
+            '(' => link.push_str("%28"),
+            ')' => link.push_str("%29"),
+            '<' => link.push_str("%3C"),
+            '>' => link.push_str("%3E"),
+            c => link.push(c),
+        }
+    }
+    link
+}
+
 fn numbered(stem: &str, n: u32, ext: &str) -> String {
     if n == 1 { format!("{stem}.{ext}") } else { format!("{stem} {n}.{ext}") }
 }
@@ -201,6 +281,44 @@ mod tests {
         assert!(follows_first_line(&nfd_stem, "# Trip to Kraków"));
         let nfd_text: String = "# Zażółć".nfd().collect();
         assert_eq!(title_from_text(&nfd_text).as_deref(), Some("Zażółć"));
+    }
+
+    #[test]
+    fn save_asset_names_after_note_and_avoids_collisions() {
+        let dir = tempfile::tempdir().unwrap();
+        let note = dir.path().join("Trip to Kraków.md");
+        let a = save_asset(&note, b"png-bytes", "PNG", "20261109-143005").unwrap();
+        let b = save_asset(&note, b"other", "png", "20261109-143005").unwrap();
+        assert_eq!(a, dir.path().join("assets/Trip-to-Kraków-20261109-143005.png"));
+        assert_eq!(b.file_name().unwrap(), "Trip-to-Kraków-20261109-143005-2.png");
+        assert_eq!(fs::read(&a).unwrap(), b"png-bytes");
+    }
+
+    #[test]
+    fn import_asset_copies_and_keeps_extension() {
+        let dir = tempfile::tempdir().unwrap();
+        let source = dir.path().join("Photo.JPEG");
+        fs::write(&source, b"jpeg").unwrap();
+        let note = dir.path().join("notes/Untitled.md");
+        let copied = import_asset(&note, &source, "t1").unwrap();
+        assert_eq!(copied, dir.path().join("notes/assets/Untitled-t1.jpeg"));
+        assert_eq!(fs::read(&copied).unwrap(), b"jpeg");
+        assert!(source.exists(), "original untouched");
+    }
+
+    #[test]
+    fn slug_handles_odd_names() {
+        assert_eq!(slug("  My note: (draft) v2 "), "My-note-draft-v2");
+        assert_eq!(slug("..."), "image");
+        assert_eq!(slug("Zażółć gęślą"), "Zażółć-gęślą");
+    }
+
+    #[test]
+    fn relative_links() {
+        let root = Path::new("/lib");
+        assert_eq!(relative_link(&root.join("notes"), &root.join("notes/assets/a b.png")), "assets/a%20b.png");
+        assert_eq!(relative_link(&root.join("notes/deep"), &root.join("img/x (1).png")), "../../img/x%20%281%29.png");
+        assert_eq!(relative_link(root, &root.join("x.png")), "x.png");
     }
 
     #[test]
