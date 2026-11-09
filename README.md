@@ -10,7 +10,7 @@ A minimal, distraction-free Markdown editor for macOS with LaTeX math, inspired 
 - **Quick open** (⌘P) and **full-text search** (⌘⇧F, ignores case and diacritics)
 - Formatting shortcuts (⌘B ⌘I ⌘K ⌘1–6 ⌘⇧M …), **Copy as HTML** (⌥⌘C)
 
-> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap.
+> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap. User manual (Polish): [docs/INSTRUKCJA.md](docs/INSTRUKCJA.md).
 
 ## Install
 
