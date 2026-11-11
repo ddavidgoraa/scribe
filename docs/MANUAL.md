@@ -316,7 +316,7 @@ You can use both modes at once.
 
 | Setting | Description |
 |---|---|
-| **Appearance** | **Match System** (default), **Light** or **Dark**, for all Scribe windows |
+| **Theme** | **Auto** (follows macOS, the default), **Light** or **Dark**, for all Scribe windows |
 | **Font** | iA Writer **Duo** (default), **Mono** or **Quattro**, with a live preview. Code always uses Mono |
 | **Size** | text size (12–26 pt) |
 | **Line length** | text column width: 64, 72 or 80 characters |

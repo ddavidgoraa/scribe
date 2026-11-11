@@ -178,12 +178,12 @@ Scribe follows your Mac's light or dark appearance automatically. Prefer one of 
 
 ## 9. Change how it looks
 
-Open **Scribe → Settings…** (or press **⌘,**). A preview shows how your text will look. You can choose:
+Open **Scribe → Settings…** (or press **⌘,**). A small preview at the top shows how your writing will look as you change things. You can choose:
 
 - **Font:** iA Writer Duo (the default), Mono or Quattro.
 - **Size:** how big the text is. Quick shortcuts: **⌘+** bigger, **⌘−** smaller, **⌘0** back to normal.
 - **Line length:** how wide the text column is (64, 72 or 80 characters).
-- **Appearance:** **Light**, **Dark**, or **Match System** to follow your Mac's setting (the default).
+- **Theme:** **Light**, **Dark**, or **Auto** to follow your Mac's setting (the default).
 
 ---
 
