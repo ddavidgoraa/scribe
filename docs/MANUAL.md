@@ -3,6 +3,8 @@
 Scribe is a minimal Markdown editor for macOS with LaTeX math, inspired by iA Writer.
 You write in plain `.md` files. Scribe never adds anything to them, and formatting shows up as you type.
 
+New to Scribe? The short, illustrated [Getting started](GETTING-STARTED.md) guide covers the basics.
+
 Version: 0.1 · Requires macOS 14 Sonoma or later on a Mac with Apple silicon (M1 or newer).
 
 ---

@@ -11,7 +11,7 @@ A minimal, distraction-free Markdown editor for macOS with LaTeX math, inspired 
 - **Images**: paste or drag them in — they're saved to an `assets` folder next to the note and previewed inline
 - Formatting shortcuts (⌘B ⌘I ⌘K ⌘1–6 ⌘⇧M …), **Copy as HTML** (⌥⌘C)
 
-> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap. User manual: [docs/MANUAL.md](docs/MANUAL.md).
+> Status: v0.1 — see [PLAN.md](PLAN.md) for scope and roadmap. New to Scribe? Start with [Getting started](docs/GETTING-STARTED.md); every detail is in the [user manual](docs/MANUAL.md).
 
 ## Install
 
