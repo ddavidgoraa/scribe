@@ -317,22 +317,19 @@ private struct PreviewColors {
 
 // MARK: Window
 
-/// Gives the Settings window the main window's chrome: no title, content up to the top.
-private struct PaperWindowStyle: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            guard let window = view.window else { return }
+/// Gives the Settings window the main window's chrome (no title, content up to the
+/// top) and lets it open over a full-screen Scribe window.
+private struct PaperWindowStyle: View {
+    var body: some View {
+        WindowHook { window in
             window.titlebarAppearsTransparent = true
             window.titleVisibility = .hidden
             window.styleMask.insert(.fullSizeContentView)
             window.isMovableByWindowBackground = true
             window.backgroundColor = Palette.paper
+            window.showsOverFullScreen()
         }
-        return view
     }
-
-    func updateNSView(_ view: NSView, context: Context) {}
 }
 
 // MARK: Labels

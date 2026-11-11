@@ -118,6 +118,7 @@ struct HelpView: View {
             help.document = document
         }
         .frame(minWidth: 620, minHeight: 480)
+        .background(WindowHook { $0.showsOverFullScreen() })
         .navigationTitle(help.document.title)
         .toolbar {
             ToolbarItem(placement: .principal) {

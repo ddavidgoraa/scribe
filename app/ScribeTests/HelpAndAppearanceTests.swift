@@ -39,3 +39,19 @@ final class HelpAndAppearanceTests: XCTestCase {
         XCTAssertNil(NSApp.appearance, "follows macOS")
     }
 }
+
+@MainActor
+final class WindowHookTests: XCTestCase {
+    func testSecondaryWindowsJoinFullScreenSpaces() {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: [.titled], backing: .buffered, defer: true)
+        var configured = false
+        let hook = WindowHook.HookView()
+        hook.configure = { $0.showsOverFullScreen(); configured = true }
+        window.contentView = NSView()
+        window.contentView!.addSubview(hook) // configures before the window is shown
+        XCTAssertTrue(configured)
+        XCTAssertTrue(window.collectionBehavior.contains(.fullScreenAuxiliary))
+        XCTAssertTrue(window.collectionBehavior.contains(.moveToActiveSpace))
+        XCTAssertFalse(window.isVisible)
+    }
+}
