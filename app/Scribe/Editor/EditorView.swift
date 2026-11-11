@@ -31,6 +31,8 @@ struct EditorView: NSViewRepresentable {
         textView.font = theme.bodyFont
         textView.typingAttributes = theme.baseAttributes
         textView.insertionPointColor = MarkdownTheme.caretColor
+        textView.drawsBackground = false
+        textView.selectedTextAttributes = [.backgroundColor: Palette.selection]
         textView.textContainerInset = NSSize(width: 40, height: 32)
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false

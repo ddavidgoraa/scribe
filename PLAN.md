@@ -79,6 +79,16 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - **Beyond:** full LaTeX → PDF (likely embedded `tectonic`), wikilinks, YAML frontmatter, table grid editor, multiple libraries.
 - MVP has no export except "Copy as HTML" (part of M4).
 
+## UI "Paper" (v0.2 design, decided 2026-11-11)
+
+Direction A from the UI proposal: the window is a sheet of paper; chrome appears on demand.
+- Hidden title bar, no toolbar; the note name is shown dimmed at the top.
+- Floating library panel (⌘⇧L), **hidden at launch**; the last open note reopens. Search field, Recent, tree without
+  icons, dates on the right; Liquid Glass on macOS 26+ (`disableGlass` default turns it off), solid panel before.
+- Status pills (words · reading time, saved state, modes) on pointer movement; conflict toast; calm empty states.
+- Spotlight-like Quick Open; ⌘⏎ creates a note titled with the query.
+- **Neutral white** palette (`Palette`), one accent (iA blue); line length 64 / 72 / 80.
+
 ## Notes
 
 - Highlighting: full parse on every edit (≈28 ms for 520 KB in release, sub-ms for typical notes), but only the

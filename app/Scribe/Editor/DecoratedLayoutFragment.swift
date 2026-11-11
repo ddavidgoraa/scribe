@@ -79,7 +79,7 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: true)
         defer { NSGraphicsContext.restoreGraphicsState() }
-        let tint = resolved(.labelColor)
+        let tint = resolved(Palette.ink)
         for (decoration, index, line) in decorations {
             draw(decoration, at: index, in: line, origin: point, tint: tint, context: context)
         }
@@ -97,7 +97,12 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
     private func draw(_ decoration: Decoration, at index: Int, in line: NSTextLineFragment,
                       origin: CGPoint, tint: CGColor, context: CGContext) {
         let bounds = line.typographicBounds
-        let x = origin.x + bounds.minX + line.locationForCharacter(at: index).x
+        var x = origin.x + bounds.minX + line.locationForCharacter(at: index).x
+        if decoration.tinted, decoration.placement != .inline {
+            // Block math is centered in the column, like a displayed equation.
+            let padding = textLayoutManager?.textContainer?.lineFragmentPadding ?? 0
+            x = origin.x + max(0, (columnWidth - 2 * padding - decoration.size.width) / 2) + padding
+        }
         let y: CGFloat
         switch decoration.placement {
         case .inline:

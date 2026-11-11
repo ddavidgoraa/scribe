@@ -137,7 +137,7 @@ final class MarkdownTextView: NSTextView {
         guard let scrollView = enclosingScrollView else { return }
         let visible = scrollView.contentSize
         let horizontal = max(24, floor((visible.width - theme.columnWidth) / 2))
-        let vertical = typewriterMode ? max(32, floor(visible.height / 2)) : 32
+        let vertical = typewriterMode ? max(72, floor(visible.height / 2)) : 72
         let inset = NSSize(width: horizontal, height: vertical)
         if textContainerInset != inset { textContainerInset = inset }
         let column = max(0, visible.width - 2 * horizontal)

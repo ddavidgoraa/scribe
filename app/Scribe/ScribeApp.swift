@@ -15,7 +15,7 @@ struct ScribeApp: App {
         Window("Scribe", id: "main") {
             ContentView()
                 .environment(library)
-                .frame(minWidth: 700, minHeight: 450)
+                .frame(minWidth: 640, minHeight: 420)
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
                     library.flush()
                 }
@@ -23,6 +23,8 @@ struct ScribeApp: App {
                     library.flush()
                 }
         }
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1100, height: 760)
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("New Note") { library.newNote() }
@@ -31,10 +33,10 @@ struct ScribeApp: App {
                 Button("Open Library…") { library.chooseLibrary() }
                     .keyboardShortcut("o")
                 Divider()
-                Button("Quick Open…") { library.isQuickOpenPresented = true }
+                Button("Quick Open…") { library.isQuickOpenPresented.toggle() }
                     .keyboardShortcut("p")
                     .disabled(library.root == nil)
-                Button("Search Library…") { library.isSearchPresented = true }
+                Button("Search Library…") { library.focusSearch() }
                     .keyboardShortcut("f", modifiers: [.command, .shift])
                     .disabled(library.root == nil)
             }

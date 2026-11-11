@@ -1,5 +1,4 @@
 import AppKit
-import SwiftUI
 import MdCore
 import Observation
 
@@ -9,6 +8,7 @@ import Observation
 final class LibraryModel {
     private static let rootKey = "libraryPath"
     private static let sortKey = "librarySort"
+    private static let lastNoteKey = "lastNotePath"
 
     private(set) var root: URL?
     private(set) var nodes: [LibraryNode] = []
@@ -25,13 +25,22 @@ final class LibraryModel {
     }
     var errorMessage: String?
     let search = SearchModel()
-    /// UI state: quick open palette (⌘P) and the sidebar search field (⌘⇧F).
+    /// UI state. The library panel starts hidden: the window opens on the last note.
+    var isSidebarVisible = false
     var isQuickOpenPresented = false
-    var isSearchPresented = false
-    var columnVisibility: NavigationSplitViewVisibility = .automatic
+    /// Incremented to focus the panel's search field (⌘⇧F).
+    private(set) var searchFocusRequest = 0
+    /// Expanded folders in the library tree.
+    var expandedFolders: Set<String> = []
 
     func toggleSidebar() {
-        columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+        isSidebarVisible.toggle()
+    }
+
+    /// ⌘⇧F: show the panel and focus its search field.
+    func focusSearch() {
+        isSidebarVisible = true
+        searchFocusRequest += 1
     }
     /// Range to select in the open note (search results), consumed by the editor.
     private(set) var pendingReveal: RevealRequest?
@@ -67,12 +76,25 @@ final class LibraryModel {
         UserDefaults.standard.set(resolved.path, forKey: Self.rootKey)
         refresh()
         search.open(root: resolved)
-        do {
-            watcher = try LibraryWatcher(root: resolved.path, listener: WatchListener { [weak self] _ in
-                Task { @MainActor in self?.handleExternalChanges() }
-            })
-        } catch {
-            report(error)
+        if let last = UserDefaults.standard.string(forKey: Self.lastNoteKey),
+           let relative = relativePath(of: URL(fileURLWithPath: last)),
+           FileManager.default.fileExists(atPath: last) {
+            selection = relative
+        }
+        // FSEvents setup waits on a background thread; don't block the main thread on it.
+        let listener = WatchListener { [weak self] _ in
+            Task { @MainActor in self?.handleExternalChanges() }
+        }
+        let path = resolved.path
+        Task {
+            let result = await Task.detached(priority: .utility) {
+                Result { try LibraryWatcher(root: path, listener: listener) }
+            }.value
+            guard root == resolved else { return } // another library was opened meanwhile
+            switch result {
+            case .success(let created): watcher = created
+            case .failure(let error): report(error)
+            }
         }
     }
 
@@ -102,8 +124,13 @@ final class LibraryModel {
     func relativePath(of url: URL) -> String? {
         guard let root else { return nil }
         let rootPath = root.path.hasSuffix("/") ? root.path : root.path + "/"
-        guard url.path.hasPrefix(rootPath) else { return nil }
-        return String(url.path.dropFirst(rootPath.count))
+        // Compare resolved paths: `/private/tmp/x` and `/tmp/x` are the same file. Resolving
+        // only works for existing items, so also resolve the folder and re-append the name.
+        let viaParent = url.deletingLastPathComponent().resolvingSymlinksInPath().appendingPathComponent(url.lastPathComponent)
+        for path in [url.path, url.resolvingSymlinksInPath().path, viaParent.path] where path.hasPrefix(rootPath) {
+            return String(path.dropFirst(rootPath.count))
+        }
+        return nil
     }
 
     private func open(relativePath: String?) {
@@ -119,6 +146,8 @@ final class LibraryModel {
             doc.onRename = { [weak self] newURL in self?.documentRenamed(to: newURL) }
             doc.onError = { [weak self] error in self?.report(error) }
             document = doc
+            UserDefaults.standard.set(url.path, forKey: Self.lastNoteKey)
+            expandParents(of: relativePath)
         } catch {
             report(error)
         }
@@ -177,6 +206,40 @@ final class LibraryModel {
     private func documentRenamed(to url: URL) {
         refresh()
         selection = relativePath(of: url)
+        UserDefaults.standard.set(url.path, forKey: Self.lastNoteKey)
+    }
+
+    private func expandParents(of relativePath: String) {
+        var parent = LibraryTree.parent(of: relativePath)
+        while !parent.isEmpty {
+            expandedFolders.insert(parent)
+            parent = LibraryTree.parent(of: parent)
+        }
+    }
+
+    /// Notes changed most recently, newest first.
+    func recentNotes(limit: Int = 5) -> [LibraryNode] {
+        var notes: [LibraryNode] = []
+        func walk(_ nodes: [LibraryNode]) {
+            for node in nodes {
+                if let children = node.children { walk(children) } else { notes.append(node) }
+            }
+        }
+        walk(nodes)
+        return Array(notes.sorted { $0.modified > $1.modified }.prefix(limit))
+    }
+
+    var noteCount: Int { notePaths.count }
+
+    /// Quick Open ⌘⏎: a new note whose first line is `title` (named after it on save).
+    func newNote(titled title: String) {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        newNote()
+        guard !title.isEmpty, let document else { return }
+        document.text = "# \(title)\n\n"
+        document.save()
+        pendingReveal = RevealRequest(relativePath: relativePath(of: document.url) ?? "",
+                                      range: NSRange(location: (document.text as NSString).length, length: 0))
     }
 
     /// All notes (relative paths), for quick open.

@@ -5,8 +5,10 @@ import AppKit
 struct MarkdownTheme: Equatable {
     var font: EditorFont = .duo
     var fontSize: CGFloat = 16
+    /// Maximum line length in characters (64, 72 or 80).
+    var columnCharacters = 64
 
-    static let columnCharacters = 64
+    static let columnChoices = [64, 72, 80]
 
     var bodyFont: NSFont { font.font(size: fontSize) }
     var monoFont: NSFont { EditorFont.mono.font(size: fontSize * 0.94) }
@@ -17,19 +19,19 @@ struct MarkdownTheme: Equatable {
         return font.font(size: (fontSize * scale[index]).rounded(), bold: true)
     }
 
-    var textColor: NSColor { .labelColor }
+    var textColor: NSColor { Palette.ink }
     /// Syntax characters: visible but quiet, like iA Writer.
-    var markerColor: NSColor { .tertiaryLabelColor }
-    var secondaryColor: NSColor { .secondaryLabelColor }
-    var linkColor: NSColor { .linkColor }
-    var mathColor: NSColor { .systemIndigo }
-    var codeBackground: NSColor { .quaternarySystemFill }
+    var markerColor: NSColor { Palette.ink3 }
+    var secondaryColor: NSColor { Palette.ink2 }
+    var linkColor: NSColor { Palette.accent }
+    var mathColor: NSColor { Palette.ink2 }
+    var codeBackground: NSColor { Palette.code }
     /// iA's blue caret.
-    static let caretColor = NSColor(srgbRed: 0.08, green: 0.62, blue: 1, alpha: 1)
+    static let caretColor = Palette.accent
 
     var paragraphStyle: NSParagraphStyle {
         let style = NSMutableParagraphStyle()
-        style.lineHeightMultiple = 1.4
+        style.lineHeightMultiple = 1.45
         return style
     }
 
@@ -39,7 +41,7 @@ struct MarkdownTheme: Equatable {
 
     /// Width of the text column.
     var columnWidth: CGFloat {
-        let sample = String(repeating: "0", count: Self.columnCharacters) as NSString
+        let sample = String(repeating: "0", count: columnCharacters) as NSString
         return ceil(sample.size(withAttributes: [.font: bodyFont]).width)
     }
 
@@ -55,7 +57,8 @@ struct MarkdownTheme: Equatable {
     static func current(_ defaults: UserDefaults = .standard) -> MarkdownTheme {
         MarkdownTheme(
             font: defaults.string(forKey: EditorSettings.fontKey).flatMap(EditorFont.init) ?? .duo,
-            fontSize: CGFloat(defaults.object(forKey: EditorSettings.fontSizeKey) as? Double ?? 16)
+            fontSize: CGFloat(defaults.object(forKey: EditorSettings.fontSizeKey) as? Double ?? 16),
+            columnCharacters: defaults.object(forKey: EditorSettings.columnKey) as? Int ?? 64
         )
     }
 }
@@ -66,5 +69,6 @@ enum EditorSettings {
     static let fontSizeKey = "editorFontSize"
     static let typewriterKey = "typewriterMode"
     static let focusKey = "focusMode"
+    static let columnKey = "columnCharacters"
     static let fontSizes: ClosedRange<Double> = 12...26
 }

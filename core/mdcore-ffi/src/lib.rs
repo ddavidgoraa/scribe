@@ -318,3 +318,19 @@ impl SearchIndex {
 pub fn markdown_to_html(markdown: String) -> String {
     mdcore::html::to_html(&markdown)
 }
+
+// MARK: Stats
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Record)]
+pub struct TextStats {
+    pub words: u32,
+    pub characters: u32,
+    pub reading_minutes: u32,
+}
+
+/// Word count, character count (without whitespace) and reading time in minutes.
+#[uniffi::export]
+pub fn text_stats(text: String) -> TextStats {
+    let s = mdcore::stats::stats(&text);
+    TextStats { words: s.words as u32, characters: s.characters as u32, reading_minutes: s.reading_minutes as u32 }
+}

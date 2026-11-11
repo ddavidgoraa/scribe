@@ -46,14 +46,21 @@ You only need to do this once.
 
 Your **library** is an ordinary folder that holds your notes, for example `~/Documents/Notes`, a folder in iCloud Drive or a git repository.
 
-- On first launch, click **Open Library…** or press **⌘O** and choose a folder.
-- Scribe remembers the folder and reopens it next time.
+- On first launch, click **Choose a folder for your notes** or press **⌘O** and choose a folder.
+- Scribe remembers the folder and reopens it next time, together with the note you had open.
 - To switch to another folder, press **⌘O** again. One library is open at a time.
 
-### The library sidebar
+### The library panel
 
-- The sidebar shows a tree of subfolders and notes. Only `.md` and `.markdown` files are listed; other files, such as images, are not.
+The window is just your text. The library is a panel that floats over the left side of the window: press **⌘⇧L** to show or hide it. It starts hidden, and the text column moves aside while it's open.
+
+- At the top: the search field (see [Library search](#library-search-f)).
+- **Recent** lists the five notes you changed last.
+- **Library** shows a tree of subfolders and notes, with the date each note was changed (the time for today, then "Yesterday", the weekday, the date).
+- At the bottom: the library folder, the number of notes and a **+** button for a new note. Right-click it to open another library.
+- The panel lists Only `.md` and `.markdown` files are listed; other files, such as images, are not.
 - Hidden files and folders (starting with a dot, like `.git`) are skipped.
+- On macOS 26 and later, the panel uses the system's Liquid Glass material.
 - Click a note to open it. Clicking a folder expands it.
 - **Sorting:** **View → Sort Notes By** offers:
   - **Name**: alphabetical, with natural number order ("Note 2" before "Note 10");
@@ -63,14 +70,13 @@ Your **library** is an ordinary folder that holds your notes, for example `~/Doc
 - **Context menus** (right-click):
   - on a folder: **New Note** (creates a note in that folder) and **Show in Finder**;
   - on a note: **Rename…** and **Show in Finder**;
-  - on empty space in the sidebar: **New Note** in the library's top folder.
-- **⌘⇧L** shows or hides the sidebar.
+- The folder of the open note is expanded automatically.
 
 ## 3. Notes: creating, naming, saving
 
 ### New note
 
-**⌘N** (or the pencil icon in the toolbar) creates `Untitled.md` in the folder of the note that's currently open. If no note is open, the file goes in the library's top folder. Further empty notes are named `Untitled 2.md`, `Untitled 3.md` and so on.
+**⌘N** (or **+** at the bottom of the library panel) creates `Untitled.md` in the folder of the note that's currently open. If no note is open, the file goes in the library's top folder. Further empty notes are named `Untitled 2.md`, `Untitled 3.md` and so on.
 
 ### Names from the first line
 
@@ -97,7 +103,7 @@ You can turn this off in **Settings (⌘,) → Name notes after their first line
 
 ### Renaming by hand
 
-Right-click the note in the sidebar, choose **Rename…**, type the new name (without `.md`) and confirm.
+Right-click the note in the library panel, choose **Rename…**, type the new name (without `.md`) and confirm.
 
 ### Saving
 
@@ -240,19 +246,21 @@ All of these are in the **Format** menu and work as toggles: using one again rem
 
 Open a note by its name:
 
-1. Press **⌘P** and start typing part of a name or path, for example `plan` or `proj sc`.
+1. Press **⌘P** and start typing part of a name or path, for example `plan` or `proj sc`. The palette opens over the text, like Spotlight.
 2. Matching is fuzzy: the letters don't have to be next to each other, and case and accents don't matter (`ges` finds `Gęś`).
-3. **↑ / ↓** choose a result, **Return** opens it, **Esc** closes the window.
+3. **↑ / ↓** choose a result, **Return** opens it, **Esc** (or a click outside) closes the palette.
+4. **⌘Return** creates a new note titled with what you typed. Return does the same when nothing matches.
 
 ### Library search: ⌘⇧F
 
 Search the contents of every note:
 
-1. Press **⌘⇧F**. The cursor moves to the search field above the sidebar.
+1. Press **⌘⇧F**. The library panel opens and the cursor moves to its search field.
 2. Type one or more words. Results appear as you type.
-3. Click a line in the results: the note opens with the match selected and scrolled into view.
-4. Click a note's name in a result header to open it without jumping to a match.
-5. Clear the search field to get back to the note tree.
+3. Each matching note is a card showing its name, folder, number of matches and the matching lines, with matches highlighted like a marker pen.
+4. Click a line: the note opens with the match selected and scrolled into view.
+5. Click a note's name to open it without jumping to a match.
+6. Clear the search field (or press **Esc** in it) to get back to the note tree.
 
 How search works:
 
@@ -289,7 +297,10 @@ You can use both modes at once.
 
 ## 10. Appearance and settings
 
-- The **text column** is about 64 characters wide and centered in the window, as in iA Writer.
+- There is **no toolbar**: just the window buttons and the note's name, dimmed, at the top.
+- The **status bar** in the bottom-right corner appears when you move the pointer and hides while you type. It shows the word count and reading time, whether the note is saved, and which writing modes are on.
+- The **text column** is 64, 72 or 80 characters wide (see Settings) and centered, as in iA Writer.
+- Colors are a neutral white with dark grey text and one blue accent (cursor, selection, the open note).
 - **Light and dark mode** follow your macOS setting automatically.
 - **Text size:**
   - **⌘+** makes text bigger,
@@ -304,6 +315,7 @@ You can use both modes at once.
 |---|---|
 | **Font** | iA Writer **Duo** (default), **Mono** or **Quattro**. Code always uses Mono |
 | **Size** | text size (12–26 pt) |
+| **Line length** | text column width: 64, 72 or 80 characters |
 | **Name notes after their first line** | automatic note names, see [Names from the first line](#names-from-the-first-line) |
 
 ## 11. Copy as HTML
@@ -319,16 +331,16 @@ In this version, math is copied as LaTeX source (inside `<span class="math">`).
 
 Notes are ordinary files, so you can edit them in other apps, sync them (iCloud, Dropbox) or keep them in git. Scribe watches the library folder:
 
-- **new, deleted and renamed files** appear in the sidebar automatically;
+- **new, deleted and renamed files** appear in the library panel automatically;
 - if the file of the **open note** changes on disk and you have no unsaved changes, the note reloads quietly and the cursor stays where it was;
-- if you **do** have unsaved changes, a bar appears above the text:
+- if you **do** have unsaved changes, a dark message appears at the bottom of the window:
   - **Reload** takes the version on disk (your changes are lost),
   - **Keep Mine** keeps your version and overwrites the file;
 - if the open note's file is **deleted**:
   - with no unsaved changes, the note closes,
-  - with unsaved changes, a **Close / Keep Mine** bar appears, and **Keep Mine** recreates the file.
+  - with unsaved changes, a **Close / Keep Mine** message appears, and **Keep Mine** recreates the file.
 
-While the bar is showing, autosave is paused, so nothing is overwritten until you decide.
+While the message is showing, autosave is paused, so nothing is overwritten until you decide.
 
 ## 13. Keyboard shortcuts
 
@@ -349,7 +361,7 @@ While the bar is showing, autosave is paused, so nothing is overwritten until yo
 | **⌥⌘C** | copy as HTML |
 | **⌘D** | focus mode |
 | **⌘T** | typewriter mode |
-| **⌘⇧L** | show/hide the library sidebar |
+| **⌘⇧L** | show/hide the library panel |
 | **⌘+ / ⌘− / ⌘0** | bigger / smaller / default text size |
 | **⌘,** | settings |
 | **⌘Z / ⌘⇧Z** | undo / redo |

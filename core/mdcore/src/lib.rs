@@ -6,6 +6,7 @@ pub mod html;
 pub mod library;
 pub mod markdown;
 pub mod search;
+pub mod stats;
 pub mod watch;
 
 pub use error::{Error, Result};
