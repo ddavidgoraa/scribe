@@ -4,6 +4,7 @@ Scribe is a minimal Markdown editor for macOS with LaTeX math, inspired by iA Wr
 You write in plain `.md` files. Scribe never adds anything to them, and formatting shows up as you type.
 
 New to Scribe? The short, illustrated [Getting started](GETTING-STARTED.md) guide covers the basics.
+Both guides are also built into the app: **Help → Getting Started** (⌘?) and **Help → Scribe Manual**.
 
 Version: 0.1 · Requires macOS 14 Sonoma or later on a Mac with Apple silicon (M1 or newer).
 
@@ -59,7 +60,7 @@ The window is just your text. The library is a panel that floats over the left s
 - At the top: the search field (see [Library search](#library-search-f)).
 - **Recent** lists the five notes you changed last.
 - **Library** shows a tree of subfolders and notes, with the date each note was changed (the time for today, then "Yesterday", the weekday, the date).
-- At the bottom: the library folder, the number of notes and a **+** button for a new note. Right-click it to open another library.
+- At the bottom: the library folder, the number of notes, a **?** button that opens the Getting Started guide and a **+** button for a new note. Right-click it to open another library.
 - The panel lists Only `.md` and `.markdown` files are listed; other files, such as images, are not.
 - Hidden files and folders (starting with a dot, like `.git`) are skipped.
 - On macOS 26 and later, the panel uses the system's Liquid Glass material.
@@ -303,7 +304,7 @@ You can use both modes at once.
 - The **status bar** in the bottom-right corner appears when you move the pointer and hides while you type. It shows the word count and reading time, whether the note is saved, and which writing modes are on.
 - The **text column** is 64, 72 or 80 characters wide (see Settings) and centered, as in iA Writer.
 - Colors are a neutral white with dark grey text and one blue accent (cursor, selection, the open note).
-- **Light and dark mode** follow your macOS setting automatically.
+- **Light and dark mode** follow your macOS setting by default. In Settings you can switch Scribe to always light or always dark.
 - **Text size:**
   - **⌘+** makes text bigger,
   - **⌘−** makes it smaller,
@@ -315,6 +316,7 @@ You can use both modes at once.
 
 | Setting | Description |
 |---|---|
+| **Appearance** | **Match System** (default), **Light** or **Dark**, for all Scribe windows |
 | **Font** | iA Writer **Duo** (default), **Mono** or **Quattro**. Code always uses Mono |
 | **Size** | text size (12–26 pt) |
 | **Line length** | text column width: 64, 72 or 80 characters |
@@ -366,6 +368,7 @@ While the message is showing, autosave is paused, so nothing is overwritten unti
 | **⌘⇧L** | show/hide the library panel |
 | **⌘+ / ⌘− / ⌘0** | bigger / smaller / default text size |
 | **⌘,** | settings |
+| **⌘?** | Help: Getting Started (also in the Help menu, with this manual) |
 | **⌘Z / ⌘⇧Z** | undo / redo |
 
 ## 14. Limitations in version 0.1

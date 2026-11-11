@@ -104,3 +104,36 @@ enum ShortDate {
         return formatter.string(from: date)
     }
 }
+
+/// Light/dark appearance chosen in Settings: follow macOS, or always light or dark.
+enum AppAppearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+
+    static let key = "appearance"
+
+    var id: Self { self }
+    var title: String {
+        switch self {
+        case .system: "Match System"
+        case .light: "Light"
+        case .dark: "Dark"
+        }
+    }
+
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .system: nil
+        case .light: NSAppearance(named: .aqua)
+        case .dark: NSAppearance(named: .darkAqua)
+        }
+    }
+
+    static var current: AppAppearance {
+        UserDefaults.standard.string(forKey: key).flatMap(AppAppearance.init) ?? .system
+    }
+
+    /// Applies to every window of the app.
+    @MainActor func apply() {
+        NSApplication.shared.appearance = nsAppearance
+    }
+}

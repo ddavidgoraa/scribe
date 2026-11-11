@@ -20,7 +20,12 @@ targets:
   Scribe:
     type: application
     platform: macOS
-    sources: [Scribe]
+    sources:
+      - path: Scribe
+      # The user guides, shown in the in-app Help window.
+      - path: ../docs
+        type: folder
+        buildPhase: resources
     dependencies:
       - package: MdCore
       - package: SwiftMath

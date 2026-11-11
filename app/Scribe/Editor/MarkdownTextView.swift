@@ -125,6 +125,12 @@ final class MarkdownTextView: NSTextView {
         updateLayoutMetrics()
     }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        // Formulas and code backgrounds are drawn by layout fragments: redraw them.
+        redraw(NSRange(location: 0, length: nsString.length))
+    }
+
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         insertionPointColor = MarkdownTheme.caretColor

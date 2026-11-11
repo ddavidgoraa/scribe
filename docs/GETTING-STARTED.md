@@ -6,6 +6,8 @@ Every note is saved for you as a simple file in a folder you choose.
 This guide shows you everything you need, step by step. It takes about 10 minutes.
 (Looking for every detail? See the [full manual](MANUAL.md).)
 
+> You can open this guide inside Scribe at any time: choose **Help → Getting Started** in the menu bar, or press **⌘?**.
+
 ---
 
 ## Before you start: the keys
@@ -170,7 +172,7 @@ Both options are in the **View** menu.
 
 ![Focus mode in dark mode](images/06-focus-dark.png)
 
-Scribe follows your Mac's light or dark appearance automatically.
+Scribe follows your Mac's light or dark appearance automatically. Prefer one of them all the time? Choose it in Settings (see the next step).
 
 ---
 
@@ -181,6 +183,7 @@ Open **Scribe → Settings…** (or press **⌘,**). You can choose:
 - **Font:** iA Writer Duo (the default), Mono or Quattro.
 - **Size:** how big the text is. Quick shortcuts: **⌘+** bigger, **⌘−** smaller, **⌘0** back to normal.
 - **Line length:** how wide the text column is (64, 72 or 80 characters).
+- **Appearance:** **Light**, **Dark**, or **Match System** to follow your Mac's setting (the default).
 
 ---
 
@@ -235,3 +238,4 @@ Copy your notes folder to another place, such as an external drive or iCloud Dri
 | **⌘+ / ⌘−** | bigger / smaller text |
 | **⌘,** | settings |
 | **⌘O** | open another notes folder |
+| **⌘?** | open this guide |

@@ -4,6 +4,8 @@ import SwiftUI
 /// hierarchy comes from indentation and weight, dates sit quietly on the right.
 struct LibraryPanel: View {
     @Environment(LibraryModel.self) private var library
+    @Environment(HelpModel.self) private var help
+    @Environment(\.openWindow) private var openWindow
     @FocusState private var searchFocused: Bool
     @State private var renaming: LibraryNode?
     @State private var newName = ""
@@ -147,6 +149,12 @@ struct LibraryPanel: View {
         HStack {
             Text(footerText).lineLimit(1).truncationMode(.middle)
             Spacer()
+            Button {
+                help.document = .gettingStarted
+                openWindow(id: HelpCommands.windowID)
+            } label: { Image(systemName: "questionmark.circle").font(.system(size: 12, weight: .semibold)) }
+                .buttonStyle(.plain)
+                .help("Getting Started (⌘?)")
             Button { library.newNote() } label: { Image(systemName: "plus").font(.system(size: 12, weight: .semibold)) }
                 .buttonStyle(.plain)
                 .help("New Note (⌘N)")

@@ -3,18 +3,21 @@ import SwiftUI
 @main
 struct ScribeApp: App {
     @State private var library = LibraryModel()
+    @State private var help = HelpModel()
     @AppStorage(EditorSettings.typewriterKey) private var typewriterMode = false
     @AppStorage(EditorSettings.focusKey) private var focusMode = false
     @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
 
     init() {
         EditorFonts.registerBundledFonts()
+        AppAppearance.current.apply()
     }
 
     var body: some Scene {
         Window("Scribe", id: "main") {
             ContentView()
                 .environment(library)
+                .environment(help)
                 .frame(minWidth: 640, minHeight: 420)
                 .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
                     library.flush()
@@ -86,6 +89,15 @@ struct ScribeApp: App {
             }
         }
 
+        Window("Scribe Help", id: HelpCommands.windowID) {
+            HelpView()
+                .environment(help)
+        }
+        .defaultSize(width: 860, height: 760)
+        .commands {
+            HelpCommands(help: help)
+        }
+
         Settings {
             SettingsView()
         }
@@ -94,5 +106,26 @@ struct ScribeApp: App {
     /// Sends a formatting action to the focused editor through the responder chain.
     private func send(_ action: Selector, _ level: Int? = nil) {
         NSApp.sendAction(action, to: nil, from: level.map { NSNumber(value: $0) })
+    }
+}
+
+/// Help menu: the bundled guides.
+struct HelpCommands: Commands {
+    static let windowID = "help"
+    let help: HelpModel
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some Commands {
+        CommandGroup(replacing: .help) {
+            Button("Getting Started") { show(.gettingStarted) }
+                .keyboardShortcut("?", modifiers: .command)
+            Button("Scribe Manual") { show(.manual) }
+        }
+    }
+
+    private func show(_ document: HelpDocument) {
+        help.anchor = nil
+        help.document = document
+        openWindow(id: Self.windowID)
     }
 }

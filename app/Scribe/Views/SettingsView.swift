@@ -5,9 +5,15 @@ struct SettingsView: View {
     @AppStorage(EditorSettings.fontKey) private var font = EditorFont.duo
     @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
     @AppStorage(EditorSettings.columnKey) private var columnCharacters = 64
+    @AppStorage(AppAppearance.key) private var appearance = AppAppearance.system
 
     var body: some View {
         Form {
+            Picker("Appearance", selection: $appearance) {
+                ForEach(AppAppearance.allCases) { Text($0.title).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: appearance) { appearance.apply() }
             Picker("Font", selection: $font) {
                 ForEach(EditorFont.allCases) { Text($0.title).tag($0) }
             }
