@@ -317,9 +317,10 @@ You can use both modes at once.
 | Setting | Description |
 |---|---|
 | **Appearance** | **Match System** (default), **Light** or **Dark**, for all Scribe windows |
-| **Font** | iA Writer **Duo** (default), **Mono** or **Quattro**. Code always uses Mono |
+| **Font** | iA Writer **Duo** (default), **Mono** or **Quattro**, with a live preview. Code always uses Mono |
 | **Size** | text size (12–26 pt) |
 | **Line length** | text column width: 64, 72 or 80 characters |
+| **Focus mode** / **Typewriter mode** | the writing modes, also in the View menu (⌘D / ⌘T) |
 | **Name notes after their first line** | automatic note names, see [Names from the first line](#names-from-the-first-line) |
 
 ## 11. Copy as HTML
