@@ -34,8 +34,16 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
         return NSRange(location: start, length: length)
     }
 
+    /// Whether focus mode fades this paragraph. TextKit draws an NSTextView's fragments
+    /// on the main thread; anywhere else, draw undimmed.
+    private var isDimmed: Bool {
+        guard Thread.isMainThread, let range = characterRange else { return false }
+        nonisolated(unsafe) let fragment = self
+        return MainActor.assumeIsolated { fragment.textView?.isDimmed(range) ?? false }
+    }
+
     override func draw(at point: CGPoint, in context: CGContext) {
-        let dimmed = characterRange.map { textView?.isDimmed($0) ?? false } ?? false
+        let dimmed = isDimmed
         if dimmed {
             context.saveGState()
             context.setAlpha(Self.dimmedAlpha)
@@ -87,11 +95,18 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
 
     /// A dynamic color as the text view shows it (its own appearance, not the app's).
     private func resolved(_ color: NSColor) -> CGColor {
-        let appearance = textLayoutManager?.textContainer?.textView?.effectiveAppearance
-            ?? NSApp?.effectiveAppearance ?? NSAppearance(named: .aqua)!
-        var cgColor = NSColor.black.cgColor
-        appearance.performAsCurrentDrawingAppearance { cgColor = color.cgColor }
-        return cgColor
+        func resolve(in appearance: NSAppearance) -> CGColor {
+            var cgColor = NSColor.black.cgColor
+            appearance.performAsCurrentDrawingAppearance { cgColor = color.cgColor }
+            return cgColor
+        }
+        // TextKit draws an NSTextView's fragments on the main thread.
+        guard Thread.isMainThread else { return resolve(in: NSAppearance.currentDrawing()) }
+        nonisolated(unsafe) let fragment = self
+        return MainActor.assumeIsolated {
+            resolve(in: fragment.textLayoutManager?.textContainer?.textView?.effectiveAppearance
+                ?? NSApp?.effectiveAppearance ?? NSAppearance(named: .aqua)!)
+        }
     }
 
     private func draw(_ decoration: Decoration, at index: Int, in line: NSTextLineFragment,

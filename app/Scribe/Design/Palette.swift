@@ -91,9 +91,13 @@ enum ShortDate {
             return formatter.string(from: date)
         }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: yesterday) {
-            formatter.dateStyle = .medium
-            formatter.doesRelativeDateFormatting = true
-            return formatter.string(from: date)
+            // Relative to `now`, not to the real today (DateFormatter's relative
+            // formatting always compares with the current date).
+            let relative = RelativeDateTimeFormatter()
+            relative.locale = locale
+            relative.dateTimeStyle = .named
+            let word = relative.localizedString(from: DateComponents(day: -1))
+            return word.prefix(1).uppercased(with: locale) + word.dropFirst()
         }
         if let days = calendar.dateComponents([.day], from: date, to: now).day, (0..<7).contains(days) {
             formatter.setLocalizedDateFormatFromTemplate("EEE")
