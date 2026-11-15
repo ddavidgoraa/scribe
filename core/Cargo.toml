@@ -1,11 +1,13 @@
 [workspace]
 resolver = "2"
-members = ["mdcore", "mdcore-ffi"]
+members = ["mdcore", "mdcore-ffi", "uniffi-bindgen"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+# Internal crates of the app; never published to crates.io.
+publish = false
 
 [profile.release]
 # Cargo strips debuginfo in release by default, and on this toolchain stripping

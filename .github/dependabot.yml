@@ -1,0 +1,17 @@
+# Keeps pinned GitHub Actions SHAs and Rust dependencies up to date.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: cargo
+    directory: /core
+    schedule:
+      interval: weekly
+    groups:
+      rust-minor:
+        update-types: ["minor", "patch"]

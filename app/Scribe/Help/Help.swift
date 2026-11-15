@@ -35,6 +35,11 @@ enum HelpContent {
     /// Pretend origin for the guides, so relative links can be told apart from the web.
     static let baseURL = URL(string: "https://help.scribe.invalid/")!
 
+    /// Links the Help window may hand to other apps.
+    static func isExternalLinkAllowed(_ url: URL) -> Bool {
+        ["http", "https", "mailto"].contains(url.scheme?.lowercased() ?? "")
+    }
+
     static var docsDirectory: URL? {
         Bundle.main.url(forResource: "docs", withExtension: nil)
     }
@@ -183,9 +188,10 @@ private struct HelpWebView: NSViewRepresentable {
                 decisionHandler(.allow)
                 return
             }
-            // Web links open in the browser.
+            // Web and mail links open in their apps; any other scheme (file:, custom app
+            // schemes) is ignored rather than handed to the system.
             guard url.host == HelpContent.baseURL.host else {
-                NSWorkspace.shared.open(url)
+                if HelpContent.isExternalLinkAllowed(url) { NSWorkspace.shared.open(url) }
                 decisionHandler(.cancel)
                 return
             }

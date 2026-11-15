@@ -33,7 +33,13 @@ make run                # build and launch Scribe.app
 The Rust core (`core/`) parses Markdown, indexes and searches the library and watches files; it is bridged to
 the Swift app (`app/`) with UniFFI (`make core`). `app/Scribe.xcodeproj` is generated from `app/project.yml`.
 
+## Privacy and security
+
+Scribe works entirely offline: no accounts, analytics, crash reporting or update checks, and it
+never downloads images from the web. Your notes are plain `.md` files in your folder.
+See [SECURITY.md](SECURITY.md) for how to report a vulnerability and how to verify a release.
+
 ## License
 
 MIT. Bundled fonts: iA Writer Duo, Mono and Quattro © Information Architects Inc., SIL Open Font License 1.1
-(see `app/Scribe/Resources/Fonts/`).
+(see `app/Scribe/Resources/Fonts/`). Other components: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

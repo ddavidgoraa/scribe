@@ -3,6 +3,7 @@ name = "mdcore"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish.workspace = true
 
 [dependencies]
 notify-debouncer-full = "0.6"

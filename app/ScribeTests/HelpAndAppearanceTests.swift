@@ -55,3 +55,14 @@ final class WindowHookTests: XCTestCase {
         XCTAssertFalse(window.isVisible)
     }
 }
+
+final class HelpLinkPolicyTests: XCTestCase {
+    func testOnlyWebAndMailLinksLeaveTheHelpWindow() {
+        XCTAssertTrue(HelpContent.isExternalLinkAllowed(URL(string: "https://github.com")!))
+        XCTAssertTrue(HelpContent.isExternalLinkAllowed(URL(string: "HTTP://example.com")!))
+        XCTAssertTrue(HelpContent.isExternalLinkAllowed(URL(string: "mailto:someone@example.com")!))
+        XCTAssertFalse(HelpContent.isExternalLinkAllowed(URL(string: "file:///etc/passwd")!))
+        XCTAssertFalse(HelpContent.isExternalLinkAllowed(URL(string: "x-apple.systempreferences:com.apple")!))
+        XCTAssertFalse(HelpContent.isExternalLinkAllowed(URL(string: "javascript:alert(1)")!))
+    }
+}

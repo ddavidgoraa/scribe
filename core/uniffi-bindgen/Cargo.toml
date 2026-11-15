@@ -1,0 +1,10 @@
+[package]
+name = "uniffi-bindgen"
+description = "Build-time tool: generates Swift bindings for mdcore-ffi. Not shipped in the app."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+uniffi = { version = "0.32", features = ["cli"] }

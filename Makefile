@@ -1,4 +1,4 @@
-.PHONY: core project build test run clean
+.PHONY: core project build test audit run clean
 
 core:            ## Build Rust core XCFramework + Swift bindings
 	./scripts/build-core.sh
@@ -11,9 +11,12 @@ build: core project
 	  -destination 'platform=macOS,arch=arm64' -derivedDataPath app/build build
 
 test: core project
-	cd core && cargo test
+	cd core && cargo test --locked
 	xcodebuild -project app/Scribe.xcodeproj -scheme Scribe \
 	  -destination 'platform=macOS,arch=arm64' -derivedDataPath app/build test
+
+audit:          ## Dependency vulnerabilities, licenses and sources (cargo-deny)
+	cd core && cargo deny check
 
 run: build
 	open app/build/Build/Products/Debug/Scribe.app

@@ -17,11 +17,11 @@ export MACOSX_DEPLOYMENT_TARGET=14.0
 cd "$CORE"
 CARGO_FLAGS=(--target "$TARGET" -p mdcore-ffi --lib)
 [[ "$PROFILE" == "release" ]] && CARGO_FLAGS+=(--release)
-cargo build "${CARGO_FLAGS[@]}"
+cargo build --locked "${CARGO_FLAGS[@]}"
 LIB="$CORE/target/$TARGET/$PROFILE/libmdcore_ffi.a"
 
 rm -rf "$GEN" && mkdir -p "$GEN/headers"
-cargo run -q -p mdcore-ffi --bin uniffi-bindgen -- \
+cargo run -q --locked -p uniffi-bindgen -- \
   generate --library "$LIB" --language swift --out-dir "$GEN"
 
 # XCFramework expects headers + module.modulemap in one directory.

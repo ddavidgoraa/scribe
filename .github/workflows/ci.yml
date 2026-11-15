@@ -1,45 +1,86 @@
 name: CI
 
-# Tests run on pull requests only (macOS runner minutes count 10x in private repos).
-# Pushing a v* tag builds and publishes the DMG without re-running the tests.
+# Tests run on pull requests (and on demand); a v* tag runs the tests again and then
+# builds and publishes the DMG.
+#
+# Hardening:
+# - the GITHUB_TOKEN is read-only unless a job needs more (only `release` does);
+# - third-party actions are pinned to full commit SHAs (Dependabot keeps them current);
+# - tools are pinned and checksum-verified; Rust builds use the committed Cargo.lock;
+# - nothing here uses `pull_request_target`, so forked PRs never see a write token.
 on:
   pull_request:
   push:
     tags: ["v*"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  supply-chain:
+    name: Dependencies (cargo-deny)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          manifest-path: core/Cargo.toml
+          command: check advisories bans licenses sources
+
   test:
-    if: github.event_name != 'push'
+    name: Tests
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          toolchain: stable
           targets: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: core
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Install XcodeGen (pinned, checksum-verified)
+        run: ./scripts/install-xcodegen.sh >> "$GITHUB_PATH"
       - name: Test
         run: make test
 
   release:
+    name: Release
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: [supply-chain, test]
     runs-on: macos-15
     permissions:
-      contents: write
+      contents: write       # create the GitHub release
+      id-token: write       # sign the build provenance attestation
+      attestations: write   # store it
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+        with:
+          toolchain: stable
           targets: aarch64-apple-darwin
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Install XcodeGen (pinned, checksum-verified)
+        run: ./scripts/install-xcodegen.sh >> "$GITHUB_PATH"
       - name: Build DMG
         run: ./scripts/make-dmg.sh "${GITHUB_REF_NAME#v}"
+      - name: Checksums
+        run: cd dist && shasum -a 256 -- *.dmg > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*.dmg
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.dmg --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" dist/*.dmg dist/SHA256SUMS.txt --generate-notes --verify-tag
