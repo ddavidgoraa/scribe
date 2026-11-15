@@ -36,7 +36,8 @@ the Swift app (`app/`) with UniFFI (`make core`). `app/Scribe.xcodeproj` is gene
 ## Privacy and security
 
 Scribe works entirely offline: no accounts, analytics, crash reporting or update checks, and it
-never downloads images from the web. Your notes are plain `.md` files in your folder.
+never downloads images from the web. It runs in the macOS App Sandbox, with access only to the
+notes folder you choose. Your notes are plain `.md` files in that folder.
 See [SECURITY.md](SECURITY.md) for how to report a vulnerability and how to verify a release.
 
 ## License

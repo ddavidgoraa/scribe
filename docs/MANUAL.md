@@ -220,7 +220,8 @@ An image on **its own line**:
 
 is shown as a preview that fits the width of the text column. When the cursor touches that line, you see the source.
 
-- Paths are relative to **the note's folder**. Absolute paths (`/…`), paths starting with `~/…` and paths with spaces also work: `![x](<my photo.png>)` or `![x](my%20photo.png)`.
+- Paths are relative to **the note's folder**; paths with spaces work too: `![x](<my photo.png>)` or `![x](my%20photo.png)`.
+- Scribe can only show images **inside your notes folder** (it runs in the macOS App Sandbox, see [Privacy and security](#where-scribe-keeps-your-data)). To use a picture from elsewhere, paste or drag it in — Scribe copies it into `assets`.
 - Images from the internet (`https://…`) are **not downloaded**; only the description is shown.
 - An image in the middle of a sentence isn't shown as a preview; only its description is.
 - If you replace an image file on disk, the new preview appears the next time you edit around the image or reopen the note.
@@ -383,6 +384,8 @@ While the message is showing, autosave is paused, so nothing is overwritten unti
 - Scribe runs only on Macs with Apple silicon and isn't notarized (see [Installation](#1-installation)).
 
 ### Where Scribe keeps your data
+
+Scribe runs in the macOS **App Sandbox**: it can only open the notes folder you chose (and files you paste or drag in), never the rest of your Mac.
 
 - Your notes: only in the folder you chose, as plain `.md` files, with pasted or dropped images in `assets` folders next to the notes.
 - App settings (library location, sorting, font, modes): in macOS preferences under the identifier `dev.dawidgora.scribe`.

@@ -112,6 +112,44 @@ enum HelpContent {
     """
 }
 
+/// The Help view is offline by construction. WebKit needs the sandbox's outgoing-network
+/// entitlement just to run its helper processes, so the view itself is locked down:
+/// no persistent website data, and a content rule list that blocks every web request.
+@MainActor
+enum HelpWebSecurity {
+    /// Blocks any resource fetched over the network; the guides only use embedded data.
+    /// (Content-blocker regexes don't support alternation, hence one rule per scheme.)
+    static let offlineRules: String = {
+        let types = #"["image", "style-sheet", "script", "font", "raw", "svg-document", "media", "popup", "ping", "fetch", "websocket", "other"]"#
+        let rules = ["^https?://", "^wss?://", "^ftp://"].map {
+            #"{"trigger": {"url-filter": "\#($0)", "resource-type": \#(types)}, "action": {"type": "block"}}"#
+        }
+        return "[" + rules.joined(separator: ",") + "]"
+    }()
+
+    private static var compiledRules: WKContentRuleList?
+
+    static func makeWebView() -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        let web = WKWebView(frame: .zero, configuration: configuration)
+        Task { await applyOfflineRules(to: web) }
+        return web
+    }
+
+    static func applyOfflineRules(to web: WKWebView) async {
+        if compiledRules == nil {
+            do {
+                compiledRules = try await WKContentRuleListStore.default()
+                    .compileContentRuleList(forIdentifier: "scribe-help-offline", encodedContentRuleList: offlineRules)
+            } catch {
+                assertionFailure("Help offline rules failed to compile: \(error)")
+            }
+        }
+        if let compiledRules { web.configuration.userContentController.add(compiledRules) }
+    }
+}
+
 /// The Help window: the guide on the left of a segmented control in the toolbar.
 struct HelpView: View {
     @Environment(HelpModel.self) private var help
@@ -145,7 +183,7 @@ private struct HelpWebView: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> WKWebView {
-        let web = WKWebView()
+        let web = HelpWebSecurity.makeWebView()
         web.navigationDelegate = context.coordinator
         web.setValue(false, forKey: "drawsBackground")
         return web

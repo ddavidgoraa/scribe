@@ -6,7 +6,10 @@ import Observation
 @MainActor
 @Observable
 final class LibraryModel {
+    /// Plain path of the library, written by versions before the App Sandbox.
     private static let rootKey = "libraryPath"
+    /// Security-scoped bookmark of the library folder (keeps access across launches).
+    private static let bookmarkKey = "libraryBookmark"
     private static let sortKey = "librarySort"
     private static let lastNoteKey = "lastNotePath"
 
@@ -49,9 +52,8 @@ final class LibraryModel {
 
     init() {
         sort = UserDefaults.standard.string(forKey: Self.sortKey).flatMap(LibrarySort.init) ?? .name
-        if let path = UserDefaults.standard.string(forKey: Self.rootKey),
-           FileManager.default.fileExists(atPath: path) {
-            openLibrary(at: URL(fileURLWithPath: path))
+        if let url = Self.savedLibraryURL() {
+            openLibrary(at: url)
         }
     }
 
@@ -68,9 +70,37 @@ final class LibraryModel {
         openLibrary(at: url)
     }
 
+    /// The library folder from the last launch: from its security-scoped bookmark, or
+    /// from a plain path saved by an older version (readable only outside the sandbox).
+    private static func savedLibraryURL() -> URL? {
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: bookmarkKey) {
+            var stale = false
+            if let url = try? URL(resolvingBookmarkData: data, options: .withSecurityScope,
+                                  relativeTo: nil, bookmarkDataIsStale: &stale) {
+                return url // a stale bookmark is re-saved by openLibrary
+            }
+        }
+        if let path = defaults.string(forKey: rootKey), FileManager.default.isReadableFile(atPath: path) {
+            return URL(fileURLWithPath: path)
+        }
+        return nil
+    }
+
+    /// The folder whose security-scoped access this session holds.
+    private var accessedFolder: URL?
+
     func openLibrary(at url: URL) {
         closeDocument()
         watcher?.stop()
+        // App Sandbox: hold access to the folder for this session and remember it for the
+        // next one. (Outside the sandbox these calls are harmless no-ops.)
+        accessedFolder?.stopAccessingSecurityScopedResource()
+        accessedFolder = url.startAccessingSecurityScopedResource() ? url : nil
+        if let bookmark = try? url.bookmarkData(options: .withSecurityScope,
+                                                includingResourceValuesForKeys: nil, relativeTo: nil) {
+            UserDefaults.standard.set(bookmark, forKey: Self.bookmarkKey)
+        }
         let resolved = url.resolvingSymlinksInPath()
         root = resolved
         UserDefaults.standard.set(resolved.path, forKey: Self.rootKey)

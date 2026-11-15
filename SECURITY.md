@@ -16,8 +16,16 @@ Only the latest release receives security fixes.
 
 ## How Scribe handles your data
 
-- **No network access.** Scribe never connects to the internet: no accounts, analytics, crash
+- **App Sandbox.** Scribe runs in the macOS App Sandbox. It can read and write only the notes
+  folder you choose (remembered with a security-scoped bookmark), files you open, paste or drag
+  in, and its own container. Its entitlements are limited to user-selected files, bookmarks and
+  outgoing network connections (see below).
+- **No network use.** Scribe never connects to the internet: no accounts, analytics, crash
   reporting or update checks. Images from the web in your notes are not downloaded.
+  The sandbox entitlement for outgoing connections is present only because Apple's WebKit,
+  which renders the Help window, needs it to start even for local pages; the Help view itself
+  blocks every web request with a content rule list and keeps no website data. Scribe's own
+  code has no networking.
 - **Your notes stay plain files** in the folder you choose; Scribe writes them atomically and
   doesn't add hidden metadata.
 - **Preferences** (library location, font, modes) are stored in macOS user defaults under

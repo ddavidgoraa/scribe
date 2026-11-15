@@ -101,6 +101,9 @@ Direction A from the UI proposal: the window is a sheet of paper; chrome appears
   at 30% alpha; typewriter mode pads the text by half a screen and scrolls the caret line to the middle.
 - Image paste/drop (`ImageInsertion`): image data → `assets/<note-slug>-<yyyyMMdd-HHmmss>.png`; files from outside the
   library are copied to `assets/`, files inside are linked relative to the note; inserted on their own line.
+- App Sandbox (since the security pass): user-selected read-write + app-scope bookmarks for the library folder,
+  plus network.client only because WebKit (Help window) requires it; the Help view blocks all web requests.
+  Older versions stored the library as a path, so after the update the folder is chosen once more.
 - Release: `scripts/make-dmg.sh` (also used by CI on `v*` tags) builds an ad-hoc signed, non-notarized DMG.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain

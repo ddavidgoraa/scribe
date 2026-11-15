@@ -1,4 +1,5 @@
 import AppKit
+import WebKit
 import XCTest
 @testable import Scribe
 
@@ -64,5 +65,34 @@ final class HelpLinkPolicyTests: XCTestCase {
         XCTAssertFalse(HelpContent.isExternalLinkAllowed(URL(string: "file:///etc/passwd")!))
         XCTAssertFalse(HelpContent.isExternalLinkAllowed(URL(string: "x-apple.systempreferences:com.apple")!))
         XCTAssertFalse(HelpContent.isExternalLinkAllowed(URL(string: "javascript:alert(1)")!))
+    }
+}
+
+/// The Help window renders inside the App Sandbox and cannot fetch anything from the web.
+@MainActor
+final class HelpWebViewTests: XCTestCase {
+    private func load(_ html: String, into web: WKWebView) async throws {
+        web.loadHTMLString(html, baseURL: HelpContent.baseURL.appendingPathComponent("GETTING-STARTED.md"))
+        try await Task.sleep(for: .milliseconds(300))
+        for _ in 0..<50 where web.isLoading { try await Task.sleep(for: .milliseconds(100)) }
+    }
+
+    func testGuideRendersWithItsImages() async throws {
+        let web = HelpWebSecurity.makeWebView()
+        await HelpWebSecurity.applyOfflineRules(to: web)
+        try await load(HelpContent.html(for: .gettingStarted)!, into: web)
+        let title = try await web.evaluateJavaScript("document.querySelector('h1').textContent") as? String
+        let images = try await web.evaluateJavaScript("Array.from(document.images).filter(i => i.naturalWidth > 0).length") as? Int
+        XCTAssertEqual(title, "Getting started with Scribe")
+        XCTAssertEqual(images, 6, "embedded screenshots load")
+    }
+
+    func testWebRequestsAreBlocked() async throws {
+        let web = HelpWebSecurity.makeWebView()
+        await HelpWebSecurity.applyOfflineRules(to: web)
+        try await load(#"<img id="remote" src="https://www.apple.com/favicon.ico">"#, into: web)
+        try await Task.sleep(for: .seconds(1))
+        let width = try await web.evaluateJavaScript("document.getElementById('remote').naturalWidth") as? Int
+        XCTAssertEqual(width, 0, "remote image must not load")
     }
 }

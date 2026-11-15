@@ -29,6 +29,18 @@ targets:
     dependencies:
       - package: MdCore
       - package: SwiftMath
+    # App Sandbox: the app reaches only what the user picks (the library folder, files
+    # opened or dropped) and its own container. No network access.
+    entitlements:
+      path: Scribe/Scribe.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-write: true
+        com.apple.security.files.bookmarks.app-scope: true
+        # Required by WebKit's helper processes for the Help window, even for local
+        # content. Scribe's own code makes no network connections, and the Help view
+        # blocks all web requests (HelpWebSecurity).
+        com.apple.security.network.client: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.dawidgora.scribe
@@ -39,7 +51,7 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Scribe
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Dawid Góra. MIT License."
-        ENABLE_APP_SANDBOX: NO
+        ENABLE_APP_SANDBOX: YES
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_IDENTITY: "-"
         CODE_SIGN_STYLE: Manual

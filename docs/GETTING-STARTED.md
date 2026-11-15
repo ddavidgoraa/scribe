@@ -55,6 +55,7 @@ The first time you open Scribe, you see this:
 3. Click **Open Library**.
 
 That's it. Scribe calls this folder your **library**. All your notes will live there.
+For your safety, Scribe can only open this folder — not the rest of your Mac.
 Next time you open Scribe, it goes straight back to the note you were writing.
 
 ---

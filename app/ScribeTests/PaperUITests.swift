@@ -39,7 +39,7 @@ final class PaletteTests: XCTestCase {
 final class LibraryModelPaperTests: XCTestCase {
     private var dir: URL!
     private var saved: [String: Any] = [:]
-    private let keys = ["libraryPath", "lastNotePath", "librarySort"]
+    private let keys = ["libraryPath", "libraryBookmark", "lastNotePath", "librarySort"]
 
     override func setUp() async throws {
         for key in keys { saved[key] = UserDefaults.standard.object(forKey: key) }
@@ -79,14 +79,25 @@ final class LibraryModelPaperTests: XCTestCase {
     }
 
     func testRelativePathsMatchThroughSymlinks() throws {
-        // /tmp is a symlink to /private/tmp.
-        let name = "scribe-\(UUID().uuidString)"
-        try FileManager.default.createDirectory(atPath: "/private/tmp/\(name)", withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(atPath: "/private/tmp/\(name)") }
+        // A library reached through a symlink: paths through the link and through the
+        // real folder name the same notes. (Inside the app's own temporary directory,
+        // which the App Sandbox allows.)
+        let link = FileManager.default.temporaryDirectory.appendingPathComponent("link-\(UUID().uuidString)")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: dir)
+        defer { try? FileManager.default.removeItem(at: link) }
         let model = LibraryModel()
-        model.openLibrary(at: URL(fileURLWithPath: "/private/tmp/\(name)"))
-        XCTAssertEqual(model.relativePath(of: URL(fileURLWithPath: "/private/tmp/\(name)/a.md")), "a.md")
-        XCTAssertEqual(model.relativePath(of: URL(fileURLWithPath: "/tmp/\(name)/a.md")), "a.md")
+        model.openLibrary(at: link)
+        XCTAssertEqual(model.relativePath(of: link.appendingPathComponent("a.md")), "a.md")
+        XCTAssertEqual(model.relativePath(of: dir.appendingPathComponent("a.md")), "a.md")
+    }
+
+    func testLibraryIsRememberedAsABookmark() throws {
+        let model = LibraryModel()
+        model.openLibrary(at: dir)
+        let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "libraryBookmark"))
+        var stale = false
+        let url = try URL(resolvingBookmarkData: data, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)
+        XCTAssertEqual(url.resolvingSymlinksInPath().path, dir.resolvingSymlinksInPath().path)
     }
 
     func testNewNoteTitledFromQuickOpen() throws {
@@ -102,5 +113,37 @@ final class LibraryModelPaperTests: XCTestCase {
         model.focusSearch()
         XCTAssertTrue(model.isSidebarVisible)
         XCTAssertEqual(model.searchFocusRequest, 1)
+    }
+}
+
+@MainActor
+final class SandboxedLibraryTests: XCTestCase {
+    private let keys = ["libraryPath", "libraryBookmark", "lastNotePath", "librarySort"]
+    private var saved: [String: Any] = [:]
+    private var dir: URL!
+
+    override func setUp() async throws {
+        for key in keys { saved[key] = UserDefaults.standard.object(forKey: key) }
+        dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+    }
+
+    override func tearDown() async throws {
+        for key in keys {
+            if let value = saved[key] { UserDefaults.standard.set(value, forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) }
+        }
+        try? FileManager.default.removeItem(at: dir)
+    }
+
+    /// File watching (FSEvents) must keep working inside the App Sandbox.
+    func testNotesAddedOutsideTheAppAppear() async throws {
+        let model = LibraryModel()
+        model.openLibrary(at: dir)
+        try await Task.sleep(for: .milliseconds(500)) // the watcher starts in the background
+        try "# Hello".write(to: dir.appendingPathComponent("From Finder.md"), atomically: true, encoding: .utf8)
+        for _ in 0..<40 where !model.notePaths.contains("From Finder.md") {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        XCTAssertEqual(model.notePaths, ["From Finder.md"])
     }
 }
