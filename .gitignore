@@ -18,3 +18,6 @@ xcuserdata/
 
 .DS_Store
 dist/
+
+# Website build output (scripts: make site)
+site/_build/

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["mdcore", "mdcore-ffi", "uniffi-bindgen"]
+members = ["mdcore", "mdcore-ffi", "uniffi-bindgen", "scribe-site"]
 
 [workspace.package]
 version = "0.1.0"

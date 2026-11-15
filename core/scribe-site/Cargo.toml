@@ -1,0 +1,10 @@
+[package]
+name = "scribe-site"
+description = "Builds the Scribe website (GitHub Pages) from the user guides. Not shipped in the app."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+mdcore = { path = "../mdcore" }

@@ -72,6 +72,7 @@ make audit    # dependency vulnerabilities, licenses and sources
 | `core/mdcore-ffi` | The core's Swift bindings, generated with [UniFFI](https://github.com/mozilla/uniffi-rs) |
 | `app/Scribe` | SwiftUI and AppKit app: the TextKit 2 editor with live preview, library panel, Quick Open, settings, help |
 | `docs/` | User guides (also bundled into the app's Help window) |
+| `site/`, `core/scribe-site` | The website (GitHub Pages), built from the guides with the same Markdown code as the app: `make site` |
 | `scripts/` | Build, packaging and repository setup scripts |
 
 The scope and design decisions are in [PLAN.md](PLAN.md).

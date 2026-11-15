@@ -1,4 +1,4 @@
-.PHONY: core project build test audit run clean
+.PHONY: core project build test audit site run clean
 
 core:            ## Build Rust core XCFramework + Swift bindings
 	./scripts/build-core.sh
@@ -17,6 +17,9 @@ test: core project
 
 audit:          ## Dependency vulnerabilities, licenses and sources (cargo-deny)
 	cd core && cargo deny check
+
+site:           ## Build the website (GitHub Pages) into site/_build
+	cd core && cargo run -q --locked -p scribe-site -- .. ../site/_build
 
 run: build
 	open app/build/Build/Products/Debug/Scribe.app

@@ -28,6 +28,7 @@ check() {
     echo "Push protection:   $(field "$API" '.security_and_analysis.secret_scanning_push_protection.status // "n/a"')"
     echo "Vuln. reporting:   $(field "$API/private-vulnerability-reporting" '.enabled')"
     echo "Rulesets:          $(field "$API/rulesets" 'map(.name) | join(", ")')"
+    echo "Pages:             $(field "$API/pages" '.html_url')"
 }
 
 if [[ "${1:-}" == "--check" ]]; then
@@ -60,6 +61,14 @@ JSON
 echo "→ Dependabot alerts and security updates"
 gh api -X PUT "$API/vulnerability-alerts" >/dev/null
 gh api -X PUT "$API/automated-security-fixes" >/dev/null
+
+echo "→ GitHub Pages, published by the Website workflow"
+if gh api "$API/pages" >/dev/null 2>&1; then
+    gh api -X PUT "$API/pages" -f build_type=workflow >/dev/null
+else
+    gh api -X POST "$API/pages" -f build_type=workflow >/dev/null
+fi
+gh workflow run pages.yml --repo "$REPO" --ref main >/dev/null || true
 
 echo "→ Private vulnerability reporting"
 gh api -X PUT "$API/private-vulnerability-reporting" >/dev/null

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}} — Scribe</title>
+  <meta name="description" content="Scribe, a calm Markdown editor for macOS with LaTeX math: {{title}}.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"{{current-home}}>Scribe</a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="getting-started.html"{{current-guide}}>Getting started</a>
+        <a href="manual.html"{{current-manual}}>Manual</a>
+        <a href="security.html"{{current-security}}>Privacy</a>
+        <a href="https://github.com/ddavidgoraa/scribe">GitHub</a>
+        <a class="button" href="https://github.com/ddavidgoraa/scribe/releases/latest">Download</a>
+      </nav>
+    </div>
+  </header>
+  <main class="doc">
+{{content}}
+  </main>
+  <footer class="site-footer">
+    <div class="inner">
+      <span>Scribe · free and open source under the <a href="https://github.com/ddavidgoraa/scribe/blob/main/LICENSE">MIT License</a></span>
+      <span class="spacer"></span>
+      <a href="https://github.com/ddavidgoraa/scribe">Source code</a>
+      <a href="security.html">Privacy &amp; security</a>
+      <span>iA Writer typefaces © Information Architects, SIL OFL</span>
+    </div>
+  </footer>
+</body>
+</html>

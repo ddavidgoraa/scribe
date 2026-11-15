@@ -104,6 +104,9 @@ Direction A from the UI proposal: the window is a sheet of paper; chrome appears
 - App Sandbox (since the security pass): user-selected read-write + app-scope bookmarks for the library folder,
   plus network.client only because WebKit (Help window) requires it; the Help view blocks all web requests.
   Older versions stored the library as a path, so after the update the folder is chosen once more.
+- Website: `site/` templates + `core/scribe-site` (renders docs with mdcore, GitHub-style heading ids, links
+  rewritten to pages) → GitHub Pages via `.github/workflows/pages.yml`, which skips while the repo is private;
+  `scripts/github-settings.sh` enables Pages once public. URL: https://ddavidgoraa.github.io/scribe/
 - Release: `scripts/make-dmg.sh` (also used by CI on `v*` tags) builds an ad-hoc signed, non-notarized DMG.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain
