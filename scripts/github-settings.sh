@@ -23,6 +23,8 @@ field() {
 check() {
     echo "Repository:        $(field "$API" '.visibility')"
     echo "Workflow token:    $(field "$API/actions/permissions/workflow" '.default_workflow_permissions')"
+    echo "Actions pinned:    $(field "$API/actions/permissions" '.sha_pinning_required')"
+    echo "Release approval:  $(field "$API/environments/release" '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[].reviewer.login] | join(", ")')"
     echo "Fork PR approval:  $(field "$API/actions/permissions/fork-pr-contributor-approval" '.approval_policy')"
     echo "Secret scanning:   $(field "$API" '.security_and_analysis.secret_scanning.status // "n/a"')"
     echo "Push protection:   $(field "$API" '.security_and_analysis.secret_scanning_push_protection.status // "n/a"')"
@@ -45,6 +47,27 @@ fi
 echo "→ Actions: read-only GITHUB_TOKEN, no PR approvals by workflows"
 gh api -X PUT "$API/actions/permissions/workflow" \
     -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false >/dev/null
+
+echo "→ Actions: every action must be pinned to a full commit SHA"
+gh api -X PUT "$API/actions/permissions" --input - >/dev/null <<'JSON'
+{"enabled": true, "allowed_actions": "all", "sha_pinning_required": true}
+JSON
+
+echo "→ Environment 'release': publishing needs the maintainer's approval, only from v* tags"
+OWNER_ID="$(gh api "users/${REPO%%/*}" --jq '.id')"
+gh api -X PUT "$API/environments/release" --input - >/dev/null <<JSON
+{
+  "wait_timer": 0,
+  "prevent_self_review": false,
+  "reviewers": [{"type": "User", "id": $OWNER_ID}],
+  "deployment_branch_policy": {"protected_branches": false, "custom_branch_policies": true}
+}
+JSON
+if ! gh api "$API/environments/release/deployment-branch-policies" \
+        --jq '.branch_policies[] | select(.name == "v*" and .type == "tag")' | grep -q .; then
+    gh api -X POST "$API/environments/release/deployment-branch-policies" \
+        -f name='v*' -f type=tag >/dev/null
+fi
 
 echo "→ Actions: approval required for workflows from first-time contributors"
 gh api -X PUT "$API/actions/permissions/fork-pr-contributor-approval" \
@@ -104,7 +127,11 @@ upsert_ruleset "Protect main" "$(cat <<JSON
     }},
     {"type": "required_status_checks", "parameters": {
       "strict_required_status_checks_policy": false,
-      "required_status_checks": [{"context": "Tests"}, {"context": "Dependencies (cargo-deny)"}]
+      "required_status_checks": [
+        {"context": "Tests"},
+        {"context": "Dependencies (cargo-deny)"},
+        {"context": "Workflow security (actionlint, zizmor)"}
+      ]
     }}
   ]
 }

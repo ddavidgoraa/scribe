@@ -1,10 +1,13 @@
-# Keeps pinned GitHub Actions SHAs and Rust dependencies up to date.
+# Keeps pinned GitHub Actions SHAs and Rust dependencies up to date. New versions wait a
+# week before being proposed, so a hijacked release is likely caught before it reaches us.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ["*"]
@@ -12,6 +15,8 @@ updates:
     directory: /core
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       rust-minor:
         update-types: ["minor", "patch"]

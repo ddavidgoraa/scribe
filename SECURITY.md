@@ -35,8 +35,14 @@ Only the latest release receives security fixes.
 
 ## Build and release integrity
 
-- Release builds run on GitHub Actions from a tagged commit, after the test and dependency
-  checks pass. Third-party actions are pinned to commit SHAs; tools are checksum-verified.
+- Release builds run on GitHub Actions from a tagged commit in a separate workflow that uses
+  no caches, after the dependency check and the full test suite pass again, and are published
+  only after the maintainer approves the run in the protected `release` environment.
+- Third-party actions are pinned to commit SHAs (enforced by the repository settings); tools
+  are checksum-verified. The workflows are checked by
+  [actionlint](https://github.com/rhysd/actionlint) and [zizmor](https://docs.zizmor.sh) on
+  every pull request. Changes to CI, scripts and security settings need the maintainer's
+  review (`.github/CODEOWNERS`).
 - Each release lists SHA-256 checksums (`SHA256SUMS.txt`) and has a signed
   [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations).
   Verify a download with:

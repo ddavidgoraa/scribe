@@ -1,17 +1,15 @@
 name: CI
 
-# Tests run on pull requests (and on demand); a v* tag runs the tests again and then
-# builds and publishes the DMG.
+# Checks for every pull request (and on demand). Releases are built by release.yml.
 #
 # Hardening:
-# - the GITHUB_TOKEN is read-only unless a job needs more (only `release` does);
+# - the GITHUB_TOKEN is read-only; no job here can write to the repository;
 # - third-party actions are pinned to full commit SHAs (Dependabot keeps them current);
 # - tools are pinned and checksum-verified; Rust builds use the committed Cargo.lock;
-# - nothing here uses `pull_request_target`, so forked PRs never see a write token.
+# - nothing here uses `pull_request_target`, so forked PRs never see a write token;
+# - the workflows themselves are checked by actionlint and zizmor.
 on:
   pull_request:
-  push:
-    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
@@ -19,7 +17,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 jobs:
   supply-chain:
@@ -33,6 +31,23 @@ jobs:
         with:
           manifest-path: core/Cargo.toml
           command: check advisories bans licenses sources
+
+  workflows:
+    name: Workflow security (actionlint, zizmor)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install actionlint (pinned, checksum-verified)
+        run: ./scripts/install-actionlint.sh >> "$GITHUB_PATH"
+      - name: actionlint
+        run: actionlint -color
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          version: 1.32.0
+          advanced-security: false   # print findings in the log; no write permission needed
 
   test:
     name: Tests
@@ -52,35 +67,3 @@ jobs:
         run: ./scripts/install-xcodegen.sh >> "$GITHUB_PATH"
       - name: Test
         run: make test
-
-  release:
-    name: Release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [supply-chain, test]
-    runs-on: macos-26
-    permissions:
-      contents: write       # create the GitHub release
-      id-token: write       # sign the build provenance attestation
-      attestations: write   # store it
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
-        with:
-          toolchain: stable
-          targets: aarch64-apple-darwin
-      - name: Install XcodeGen (pinned, checksum-verified)
-        run: ./scripts/install-xcodegen.sh >> "$GITHUB_PATH"
-      - name: Build DMG
-        run: ./scripts/make-dmg.sh "${GITHUB_REF_NAME#v}"
-      - name: Checksums
-        run: cd dist && shasum -a 256 -- *.dmg > SHA256SUMS.txt && cat SHA256SUMS.txt
-      - name: Attest build provenance
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-path: dist/*.dmg
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.dmg dist/SHA256SUMS.txt --generate-notes --verify-tag

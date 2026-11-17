@@ -1,0 +1,6 @@
+# Changes to the build, release and security setup need the maintainer's review.
+/.github/            @ddavidgoraa
+/scripts/            @ddavidgoraa
+/core/deny.toml      @ddavidgoraa
+/app/Scribe/Scribe.entitlements @ddavidgoraa
+/SECURITY.md         @ddavidgoraa
