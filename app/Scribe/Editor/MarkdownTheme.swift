@@ -1,9 +1,9 @@
 import AppKit
 
-/// Visual styling of Markdown source, iA Writer–like: one typeface, a ~64 character
+/// Visual styling of Markdown source: one typeface, a ~64 character
 /// column, generous line height, quiet markers.
 struct MarkdownTheme: Equatable {
-    var font: EditorFont = .duo
+    var font: EditorFont = .default
     var fontSize: CGFloat = 16
     /// Maximum line length in characters (64, 72 or 80).
     var columnCharacters = 64
@@ -20,13 +20,13 @@ struct MarkdownTheme: Equatable {
     }
 
     var textColor: NSColor { Palette.ink }
-    /// Syntax characters: visible but quiet, like iA Writer.
+    /// Syntax characters: visible but quiet.
     var markerColor: NSColor { Palette.ink3 }
     var secondaryColor: NSColor { Palette.ink2 }
     var linkColor: NSColor { Palette.accent }
     var mathColor: NSColor { Palette.ink2 }
     var codeBackground: NSColor { Palette.code }
-    /// iA's blue caret.
+    /// The accent-colored caret.
     static let caretColor = Palette.accent
 
     var paragraphStyle: NSParagraphStyle {
@@ -56,7 +56,7 @@ struct MarkdownTheme: Equatable {
     /// From user settings.
     static func current(_ defaults: UserDefaults = .standard) -> MarkdownTheme {
         MarkdownTheme(
-            font: defaults.string(forKey: EditorSettings.fontKey).flatMap(EditorFont.init) ?? .duo,
+            font: EditorFont(storedValue: defaults.string(forKey: EditorSettings.fontKey)),
             fontSize: CGFloat(defaults.object(forKey: EditorSettings.fontSizeKey) as? Double ?? 16),
             columnCharacters: defaults.object(forKey: EditorSettings.columnKey) as? Int ?? 64
         )

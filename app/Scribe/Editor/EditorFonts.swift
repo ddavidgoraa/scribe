@@ -1,68 +1,55 @@
 import AppKit
-import CoreText
 
-/// The bundled iA Writer typefaces (SIL OFL 1.1, see Resources/Fonts/LICENSE-*).
+/// The editor's typefaces: Apple's system families, so nothing is bundled and text
+/// renders exactly as macOS intends.
 enum EditorFont: String, CaseIterable, Identifiable {
-    case duo, mono, quattro
+    /// SF Pro.
+    case sans
+    /// New York.
+    case serif
+    /// SF Mono.
+    case mono
+
+    static let `default`: EditorFont = .sans
 
     var id: Self { self }
     var title: String {
         switch self {
-        case .duo: "iA Writer Duo"
-        case .mono: "iA Writer Mono"
-        case .quattro: "iA Writer Quattro"
+        case .sans: "Sans"
+        case .serif: "Serif"
+        case .mono: "Mono"
         }
     }
 
-    /// PostScript name prefix of the static fonts, e.g. `iAWriterDuoS-Bold`.
-    fileprivate var postScriptPrefix: String {
-        switch self {
-        case .duo: "iAWriterDuoS"
-        case .mono: "iAWriterMonoS"
-        case .quattro: "iAWriterQuattroS"
-        }
+    /// The system font in this design; values saved by older versions fall back to the default.
+    init(storedValue: String?) {
+        self = storedValue.flatMap(EditorFont.init(rawValue:)) ?? .default
     }
 
     func font(size: CGFloat, bold: Bool = false, italic: Bool = false) -> NSFont {
-        EditorFonts.registerBundledFonts()
-        let style = switch (bold, italic) {
-        case (false, false): "Regular"
-        case (true, false): "Bold"
-        case (false, true): "Italic"
-        case (true, true): "BoldItalic"
+        let base: NSFont = switch self {
+        case .sans: .systemFont(ofSize: size)
+        case .serif: Self.serifFont(size: size)
+        case .mono: .monospacedSystemFont(ofSize: size, weight: .regular)
         }
-        return NSFont(name: "\(postScriptPrefix)-\(style)", size: size)
-            ?? (bold ? .boldSystemFont(ofSize: size) : .systemFont(ofSize: size))
+        return EditorFonts.adding(bold: bold, italic: italic, to: base)
+    }
+
+    private static func serifFont(size: CGFloat) -> NSFont {
+        let system = NSFont.systemFont(ofSize: size)
+        guard let descriptor = system.fontDescriptor.withDesign(.serif) else { return system }
+        return NSFont(descriptor: descriptor, size: size) ?? system
     }
 }
 
 enum EditorFonts {
-    /// `font` with bold/italic added, keeping its iA family (by PostScript name).
+    /// `font` with bold and/or italic added, keeping its family and design.
     static func adding(bold: Bool = false, italic: Bool = false, to font: NSFont) -> NSFont {
-        let name = font.fontName
-        if name.hasPrefix("iAWriter"), let dash = name.firstIndex(of: "-") {
-            let prefix = name[..<dash]
-            let style = name[name.index(after: dash)...]
-            let isBold = bold || style.contains("Bold")
-            let isItalic = italic || style.contains("Italic")
-            let newStyle = isBold && isItalic ? "BoldItalic" : isBold ? "Bold" : isItalic ? "Italic" : "Regular"
-            if let converted = NSFont(name: "\(prefix)-\(newStyle)", size: font.pointSize) { return converted }
-        }
-        var result = font
-        if bold { result = NSFontManager.shared.convert(result, toHaveTrait: .boldFontMask) }
-        if italic { result = NSFontManager.shared.convert(result, toHaveTrait: .italicFontMask) }
-        return result
+        guard bold || italic else { return font }
+        var traits = font.fontDescriptor.symbolicTraits
+        if bold { traits.insert(.bold) }
+        if italic { traits.insert(.italic) }
+        let descriptor = font.fontDescriptor.withSymbolicTraits(traits)
+        return NSFont(descriptor: descriptor, size: font.pointSize) ?? font
     }
-
-    /// Registers the app's bundled fonts for this process (idempotent).
-    static func registerBundledFonts() {
-        _ = registration
-    }
-
-    private static let registration: Void = {
-        let urls = Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) ?? []
-        for url in urls {
-            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
-        }
-    }()
 }

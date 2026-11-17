@@ -9,7 +9,6 @@ struct ScribeApp: App {
     @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
 
     init() {
-        EditorFonts.registerBundledFonts()
         AppAppearance.current.apply()
     }
 
@@ -37,13 +36,19 @@ struct ScribeApp: App {
                     .keyboardShortcut("o")
                 Divider()
                 Button("Quick Open…") { library.isQuickOpenPresented.toggle() }
-                    .keyboardShortcut("p")
+                    .keyboardShortcut("o", modifiers: [.command, .shift])
                     .disabled(library.root == nil)
                 Button("Search Library…") { library.focusSearch() }
                     .keyboardShortcut("f", modifiers: [.command, .shift])
                     .disabled(library.root == nil)
             }
-            CommandGroup(replacing: .printItem) {}
+            CommandGroup(replacing: .printItem) {
+                Button("Page Setup…") { NSApp.sendAction(#selector(NSApplication.runPageLayout(_:)), to: nil, from: nil) }
+                    .keyboardShortcut("p", modifiers: [.command, .shift])
+                // The focused note or Help guide prints itself (responder chain).
+                Button("Print…") { send(#selector(MarkdownTextView.printDocument(_:))) }
+                    .keyboardShortcut("p")
+            }
             CommandGroup(after: .pasteboard) {
                 Button("Copy as HTML") { send(#selector(MarkdownTextView.copyAsHTML(_:))) }
                     .keyboardShortcut("c", modifiers: [.command, .option])

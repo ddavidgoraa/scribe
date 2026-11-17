@@ -7,7 +7,6 @@ open-source software.
 
 | Component | License | Notes |
 |---|---|---|
-| [iA Writer Duo, Mono, Quattro](https://github.com/iaolo/iA-Fonts) | SIL Open Font License 1.1 | © Information Architects Inc., Reserved Font Name "iA Writer"; based on IBM Plex. Unmodified; license texts in `app/Scribe/Resources/Fonts/`. |
 | [SwiftMath](https://github.com/mgriebling/SwiftMath) | MIT | Math rendering, including its bundled math fonts (see the package for their licenses). |
 | [pulldown-cmark](https://github.com/pulldown-cmark/pulldown-cmark) | MIT | Markdown parsing and HTML. |
 | [nucleo-matcher](https://github.com/helix-editor/nucleo) | MPL-2.0 | Fuzzy matching for Quick Open (unmodified). |

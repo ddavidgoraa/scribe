@@ -5,7 +5,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(LibraryModel.self) private var library
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.duo
+    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.default
     @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
     @AppStorage(EditorSettings.columnKey) private var columnCharacters = 64
     @AppStorage(EditorSettings.typewriterKey) private var typewriterMode = false
@@ -68,7 +68,7 @@ struct ContentView: View {
         } else {
             EmptyStateView(
                 title: "Start writing.",
-                hints: [("⌘N", "New Note"), ("⌘P", "Open"), ("⌘⇧L", "Library")],
+                hints: [("⌘N", "New Note"), ("⌘⇧O", "Open"), ("⌘⇧L", "Library")],
                 action: { library.newNote() }
             )
         }
@@ -96,7 +96,7 @@ struct EmptyStateView: View {
     let title: String
     let hints: [(key: String, label: String)]
     let action: () -> Void
-    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.duo
+    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.default
 
     var body: some View {
         VStack(spacing: 12) {

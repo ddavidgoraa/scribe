@@ -87,8 +87,8 @@ final class HighlighterTests: XCTestCase {
 }
 
 private extension NSFont {
-    /// iA Writer Mono doesn't set the fixed-pitch flag (some glyphs are double width).
-    var isCodeFont: Bool { isFixedPitch || fontName.hasPrefix("iAWriterMono") }
+    /// Code is set in SF Mono.
+    var isCodeFont: Bool { isFixedPitch }
 }
 
 final class SpanDiffTests: XCTestCase {
@@ -129,25 +129,44 @@ final class SpanDiffTests: XCTestCase {
 
 @MainActor
 final class ThemeTests: XCTestCase {
-    func testBundledFontsLoadWithAllStyles() {
+    private func traits(_ font: NSFont) -> NSFontDescriptor.SymbolicTraits { font.fontDescriptor.symbolicTraits }
+
+    func testSystemFamilies() {
+        XCTAssertFalse(EditorFont.sans.font(size: 16).isFixedPitch)
+        XCTAssertTrue(EditorFont.mono.font(size: 16).isFixedPitch, "SF Mono")
+        let serif = EditorFont.serif.font(size: 16)
+        XCTAssertNotEqual(serif.familyName, EditorFont.sans.font(size: 16).familyName, "New York, not SF Pro")
+        XCTAssertFalse(serif.isFixedPitch)
         for family in EditorFont.allCases {
-            XCTAssertTrue(family.font(size: 16).fontName.hasPrefix("iAWriter"), "\(family) regular")
-            XCTAssertTrue(family.font(size: 16, bold: true, italic: true).fontName.hasSuffix("BoldItalic"))
+            let font = family.font(size: 16, bold: true, italic: true)
+            XCTAssertTrue(traits(font).contains(.bold), "\(family) bold")
+            XCTAssertTrue(traits(font).contains(.italic), "\(family) italic")
         }
     }
 
     func testTraitsKeepTheFamily() {
-        let duo = EditorFont.duo.font(size: 16)
-        XCTAssertEqual(EditorFonts.adding(bold: true, to: duo).fontName, "iAWriterDuoS-Bold")
-        let bold = EditorFonts.adding(bold: true, to: duo)
-        XCTAssertEqual(EditorFonts.adding(italic: true, to: bold).fontName, "iAWriterDuoS-BoldItalic")
+        for family in EditorFont.allCases {
+            let regular = family.font(size: 16)
+            let bold = EditorFonts.adding(bold: true, to: regular)
+            let boldItalic = EditorFonts.adding(italic: true, to: bold)
+            XCTAssertEqual(bold.familyName, regular.familyName, "\(family)")
+            XCTAssertEqual(boldItalic.familyName, regular.familyName, "\(family)")
+            XCTAssertTrue(traits(boldItalic).contains([.bold, .italic]))
+        }
+    }
+
+    func testOldFontSettingsFallBackToTheDefault() {
+        XCTAssertEqual(EditorFont(storedValue: "duo"), .sans)
+        XCTAssertEqual(EditorFont(storedValue: "quattro"), .sans)
+        XCTAssertEqual(EditorFont(storedValue: nil), .sans)
+        XCTAssertEqual(EditorFont(storedValue: "serif"), .serif)
     }
 
     func testColumnIsAbout64Characters() {
-        let theme = MarkdownTheme(font: .duo, fontSize: 16)
+        let theme = MarkdownTheme(font: .sans, fontSize: 16)
         XCTAssertGreaterThan(theme.columnWidth, 450)
         XCTAssertLessThan(theme.columnWidth, 700)
-        XCTAssertGreaterThan(MarkdownTheme(font: .duo, fontSize: 20).columnWidth, theme.columnWidth)
+        XCTAssertGreaterThan(MarkdownTheme(font: .sans, fontSize: 20).columnWidth, theme.columnWidth)
     }
 
     func testFocusBlockSpansLinesBetweenBlankLines() {

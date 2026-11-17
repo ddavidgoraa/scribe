@@ -75,9 +75,9 @@ enum HelpContent {
     <!doctype html><html><head><meta charset="utf-8"><title>{{title}}</title>
     <meta name="color-scheme" content="light dark">
     <style>
-    :root { --paper:#fff; --paper2:#F5F5F7; --ink:#1D1D1F; --ink2:#6E6E73; --ink3:#AEAEB2; --line:#E5E5EA; --accent:#1A9FFF; }
+    :root { --paper:#fff; --paper2:#F5F5F7; --ink:#1D1D1F; --ink2:#6E6E73; --ink3:#AEAEB2; --line:#E5E5EA; --accent:#2D5BE3; }
     @media (prefers-color-scheme: dark) {
-      :root { --paper:#161617; --paper2:#1F1F21; --ink:#EDEDED; --ink2:#98989D; --ink3:#636366; --line:#2C2C2E; --accent:#3BAFFF; }
+      :root { --paper:#161617; --paper2:#1F1F21; --ink:#EDEDED; --ink2:#98989D; --ink3:#636366; --line:#2C2C2E; --accent:#7C9BF5; }
     }
     html { background: var(--paper); }
     body { font: 15px/1.6 -apple-system, "SF Pro Text", sans-serif; color: var(--ink); max-width: 760px;
@@ -129,10 +129,10 @@ enum HelpWebSecurity {
 
     private static var compiledRules: WKContentRuleList?
 
-    static func makeWebView() -> WKWebView {
+    static func makeWebView() -> HelpWebView.PrintableWebView {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
-        let web = WKWebView(frame: .zero, configuration: configuration)
+        let web = HelpWebView.PrintableWebView(frame: .zero, configuration: configuration)
         Task { await applyOfflineRules(to: web) }
         return web
     }
@@ -175,21 +175,38 @@ struct HelpView: View {
     }
 }
 
-private struct HelpWebView: NSViewRepresentable {
+struct HelpWebView: NSViewRepresentable {
+    /// The guide's web view; File → Print (⌘P) prints the guide.
+    final class PrintableWebView: WKWebView {
+        @objc func printDocument(_ sender: Any?) {
+            let info = NotePrinter.printInfo()
+            info.dictionary()[NSPrintInfo.AttributeKey.headerAndFooter] = false
+            let operation = printOperation(with: info)
+            operation.view?.frame = bounds
+            operation.jobTitle = "Scribe — " + (title ?? "Help")
+            operation.showsPrintPanel = true
+            if let window {
+                operation.runModal(for: window, delegate: nil, didRun: nil, contextInfo: nil)
+            } else {
+                operation.run()
+            }
+        }
+    }
+
     let document: HelpDocument
     let anchor: String?
     let navigate: (HelpDocument, String?) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    func makeNSView(context: Context) -> WKWebView {
+    func makeNSView(context: Context) -> PrintableWebView {
         let web = HelpWebSecurity.makeWebView()
         web.navigationDelegate = context.coordinator
         web.setValue(false, forKey: "drawsBackground")
         return web
     }
 
-    func updateNSView(_ web: WKWebView, context: Context) {
+    func updateNSView(_ web: PrintableWebView, context: Context) {
         let coordinator = context.coordinator
         coordinator.navigate = navigate
         if coordinator.loaded != document {
@@ -209,6 +226,8 @@ private struct HelpWebView: NSViewRepresentable {
         var navigate: (HelpDocument, String?) -> Void = { _, _ in }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            // Keyboard focus in the guide, so ⌘P and scrolling keys reach it.
+            webView.window?.makeFirstResponder(webView)
             if let anchor = pendingAnchor {
                 pendingAnchor = nil
                 scroll(webView, to: anchor)

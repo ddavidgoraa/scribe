@@ -13,6 +13,9 @@ final class MarkdownHighlighter {
     var baseURL: URL?
     /// Largest size of an image preview.
     var maxImageSize = CGSize(width: 560, height: 360)
+    /// Printing: syntax the editor keeps visible (list bullets, task boxes, rules) is
+    /// replaced by its typeset form too, for a clean page.
+    var printMode = false
     private(set) var spans: [MarkdownSpan] = []
     /// Caret position, or `nil` while a range is selected.
     private(set) var caret: Int?
@@ -87,7 +90,7 @@ final class MarkdownHighlighter {
             }
         }
         // …then live preview: hide and decorate inactive elements.
-        for span in relevant where Presentation.hidesMarkers(span.kind) {
+        for span in relevant where Presentation.hidesMarkers(span.kind) || (printMode && Presentation.typesetForPrint(span.kind)) {
             present(span, active: Presentation.isActive(span, caret: caret), in: storage, text: text, clip: range)
         }
         storage.endEditing()
@@ -150,10 +153,45 @@ final class MarkdownHighlighter {
             guard !active else { return }
             hideMarkers(of: span, in: storage, clip: clip)
             indent(range, by: 18, in: storage, clip: clip)
+        case .listItem:
+            presentListMarker(span, in: storage, text: text, clip: clip)
+        case .taskMarker(let checked):
+            let decoration = PrintGlyphs.checkbox(checked: checked, font: theme.bodyFont)
+            presentInline(decoration, over: range, in: storage, clip: clip)
+        case .thematicBreak:
+            let decoration = PrintGlyphs.rule(width: maxImageSize.width)
+            presentBlock(decoration, source: range, in: storage, text: text, clip: clip)
         default:
             guard !active else { return }
             hideMarkers(of: span, in: storage, clip: clip)
         }
+    }
+
+    /// Print: `- ` becomes a bullet; a task item's `- ` disappears (its box is drawn by
+    /// the task marker); `1. ` stays, in the text color.
+    private func presentListMarker(_ span: MarkdownSpan, in storage: NSTextStorage, text: NSString, clip: NSRange) {
+        guard let marker = span.markers.first?.nsRange else { return }
+        let symbol = text.substring(with: marker).trimmingCharacters(in: .whitespaces)
+        guard ["-", "*", "+"].contains(symbol) else {
+            let r = NSIntersectionRange(marker, clip)
+            if r.length > 0 { storage.addAttribute(.foregroundColor, value: theme.textColor, range: r) }
+            return
+        }
+        let after = NSMaxRange(marker)
+        let rest = text.substring(with: NSRange(location: after, length: min(3, text.length - after)))
+        if ["[ ]", "[x]", "[X]"].contains(rest) {
+            hide(marker, in: storage, clip: clip)
+        } else {
+            presentInline(PrintGlyphs.bullet(font: theme.bodyFont), over: marker, in: storage, clip: clip)
+        }
+    }
+
+    /// Hides `range` and draws `decoration` in its place, reserving its width.
+    private func presentInline(_ decoration: Decoration, over range: NSRange, in storage: NSTextStorage, clip: NSRange) {
+        hide(range, in: storage, clip: clip)
+        guard NSLocationInRange(range.location, clip) else { return }
+        storage.addAttributes([.scribeDecoration: decoration, .kern: decoration.size.width],
+                              range: NSRange(location: range.location, length: 1))
     }
 
     private func presentMath(_ span: MarkdownSpan, active: Bool, in storage: NSTextStorage, text: NSString, clip: NSRange) {

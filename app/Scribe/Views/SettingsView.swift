@@ -6,7 +6,7 @@ import SwiftUI
 /// controls with the same accent selection as the library.
 struct SettingsView: View {
     @AppStorage(AppAppearance.key) private var appearance = AppAppearance.system
-    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.duo
+    @AppStorage(EditorSettings.fontKey) private var font = EditorFont.default
     @AppStorage(EditorSettings.fontSizeKey) private var fontSize = 16.0
     @AppStorage(EditorSettings.columnKey) private var columnCharacters = 64
     @AppStorage(EditorSettings.focusKey) private var focusMode = false
@@ -311,7 +311,7 @@ private struct PreviewColors {
         ink3 = c(0xAEAEB2, 0x636366)
         line = c(0xE5E5EA, 0x2C2C2E)
         lights = c(0xDCDCE0, 0x3A3A3C)
-        accent = c(0x1A9FFF, 0x3BAFFF)
+        accent = c(0x2D5BE3, 0x7C9BF5)
     }
 }
 
@@ -353,5 +353,5 @@ private extension AppAppearance {
 }
 
 private extension EditorFont {
-    var shortTitle: String { title.replacingOccurrences(of: "iA Writer ", with: "") }
+    var shortTitle: String { title }
 }

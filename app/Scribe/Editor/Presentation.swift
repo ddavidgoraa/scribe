@@ -23,6 +23,14 @@ enum Presentation {
         }
     }
 
+    /// Whether printing replaces the span's visible syntax with a typeset form.
+    static func typesetForPrint(_ kind: SpanKind) -> Bool {
+        switch kind {
+        case .listItem, .taskMarker, .thematicBreak: true
+        default: false
+        }
+    }
+
     /// Whether `range` occupies whole lines (starts at a line start, ends at a line end).
     static func isStandalone(_ range: NSRange, in text: NSString) -> Bool {
         let startsLine = range.location == 0 || text.character(at: range.location - 1) == 0x0A

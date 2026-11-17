@@ -40,6 +40,18 @@ final class MarkdownTextView: NSTextView {
 
     private var nsString: NSString { string as NSString }
 
+    // MARK: Printing
+
+    /// File → Print (⌘P): the note as a clean document.
+    @objc func printDocument(_ sender: Any?) {
+        let url = noteURL()
+        NotePrinter.print(text: string,
+                          title: url?.deletingPathExtension().lastPathComponent ?? "Untitled",
+                          baseURL: url?.deletingLastPathComponent(),
+                          font: theme.font,
+                          window: window)
+    }
+
     // MARK: Images (paste and drop)
 
     /// The open note's file (it can change when the note is renamed).

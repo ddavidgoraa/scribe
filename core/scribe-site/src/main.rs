@@ -18,9 +18,6 @@ const PAGES: &[(&str, &str, &str, &str)] = &[
     ("SECURITY.md", "security.html", "Privacy & security", "security"),
 ];
 
-/// Bundled typefaces used by the site (SIL OFL, redistributable).
-const FONTS: &[&str] = &["iAWriterDuoS-Regular.ttf", "iAWriterDuoS-Bold.ttf", "LICENSE-iA-Writer-Duo.md"];
-
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let root = PathBuf::from(args.get(1).map(String::as_str).unwrap_or("."));
@@ -35,7 +32,6 @@ fn build(root: &Path, out: &Path) -> io::Result<()> {
         fs::remove_dir_all(out)?;
     }
     fs::create_dir_all(out.join("images"))?;
-    fs::create_dir_all(out.join("fonts"))?;
 
     let site = root.join("site");
     let page_template = fs::read_to_string(site.join("page.html"))?;
@@ -50,9 +46,6 @@ fn build(root: &Path, out: &Path) -> io::Result<()> {
         if path.extension().is_some_and(|e| e == "png") {
             fs::copy(&path, out.join("images").join(path.file_name().unwrap()))?;
         }
-    }
-    for font in FONTS {
-        fs::copy(root.join("app/Scribe/Resources/Fonts").join(font), out.join("fonts").join(font))?;
     }
 
     for (source, file, title, key) in PAGES {

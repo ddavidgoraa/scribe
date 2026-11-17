@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// "Paper" design tokens: neutral white, ink greys and one accent (iA blue).
+/// "Paper" design tokens: neutral white, ink greys and one accent (Scribe ink blue).
 /// Every color adapts to light and dark appearance.
 enum Palette {
     static let paper = dynamic(light: 0xFFFFFF, dark: 0x161617)
@@ -12,11 +12,11 @@ enum Palette {
     /// Markdown markers, hints, dates.
     static let ink3 = dynamic(light: 0xAEAEB2, dark: 0x636366)
     static let line = dynamic(light: 0xE5E5EA, dark: 0x2C2C2E)
-    static let accent = dynamic(light: 0x1A9FFF, dark: 0x3BAFFF)
-    static let accentSoft = dynamic(light: 0x1A9FFF, dark: 0x3BAFFF, alpha: 0.12)
+    static let accent = dynamic(light: 0x2D5BE3, dark: 0x7C9BF5)
+    static let accentSoft = dynamic(light: 0x2D5BE3, dark: 0x7C9BF5, alpha: 0.12)
     /// Text of the selected row (stronger than `accent` for contrast on `accentSoft`).
-    static let accentText = dynamic(light: 0x0A6BB3, dark: 0x6CC4FF)
-    static let selection = dynamic(light: 0x1A9FFF, dark: 0x3BAFFF, alpha: 0.2)
+    static let accentText = dynamic(light: 0x1F45B8, dark: 0xA9BDFA)
+    static let selection = dynamic(light: 0x2D5BE3, dark: 0x7C9BF5, alpha: 0.2)
     static let code = dynamic(light: 0xF5F5F7, dark: 0x232325)
     /// Search hit highlight, like a marker pen.
     static let mark = dynamic(light: 0xFFCC00, dark: 0xFFD60A, alpha: 0.35)

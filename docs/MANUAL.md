@@ -1,6 +1,6 @@
 # Scribe — User Manual
 
-Scribe is a minimal Markdown editor for macOS with LaTeX math, inspired by iA Writer.
+Scribe is a minimal Markdown editor for macOS with LaTeX math.
 You write in plain `.md` files. Scribe never adds anything to them, and formatting shows up as you type.
 
 New to Scribe? The short, illustrated [Getting started](GETTING-STARTED.md) guide covers the basics.
@@ -23,9 +23,10 @@ Version: 0.1 · Requires macOS 14 Sonoma or later on a Mac with Apple silicon (M
 9. [Writing modes: focus and typewriter](#9-writing-modes-focus-and-typewriter)
 10. [Appearance and settings](#10-appearance-and-settings)
 11. [Copy as HTML](#11-copy-as-html)
-12. [Changes made outside Scribe](#12-changes-made-outside-scribe)
-13. [Keyboard shortcuts](#13-keyboard-shortcuts)
-14. [Limitations in version 0.1](#14-limitations-in-version-01)
+12. [Printing and PDF](#12-printing-and-pdf)
+13. [Changes made outside Scribe](#13-changes-made-outside-scribe)
+14. [Keyboard shortcuts](#14-keyboard-shortcuts)
+15. [Limitations in version 0.1](#15-limitations-in-version-01)
 
 ---
 
@@ -246,11 +247,11 @@ All of these are in the **Format** menu and work as toggles: using one again rem
 
 ## 8. Finding things: Quick Open and library search
 
-### Quick Open: ⌘P
+### Quick Open: ⌘⇧O
 
 Open a note by its name:
 
-1. Press **⌘P** and start typing part of a name or path, for example `plan` or `proj sc`. The palette opens over the text, like Spotlight.
+1. Press **⌘⇧O** and start typing part of a name or path, for example `plan` or `proj sc`. The palette opens over the text, like Spotlight.
 2. Matching is fuzzy: the letters don't have to be next to each other, and case and accents don't matter (`ges` finds `Gęś`).
 3. **↑ / ↓** choose a result, **Return** opens it, **Esc** (or a click outside) closes the palette.
 4. **⌘Return** creates a new note titled with what you typed. Return does the same when nothing matches.
@@ -303,7 +304,7 @@ You can use both modes at once.
 
 - There is **no toolbar**: just the window buttons and the note's name, dimmed, at the top.
 - The **status bar** in the bottom-right corner appears when you move the pointer and hides while you type. It shows the word count and reading time, whether the note is saved, and which writing modes are on.
-- The **text column** is 64, 72 or 80 characters wide (see Settings) and centered, as in iA Writer.
+- The **text column** is 64, 72 or 80 characters wide (see Settings) and centered.
 - Colors are a neutral white with dark grey text and one blue accent (cursor, selection, the open note).
 - **Light and dark mode** follow your macOS setting by default. In Settings you can switch Scribe to always light or always dark.
 - **Text size:**
@@ -318,7 +319,7 @@ You can use both modes at once.
 | Setting | Description |
 |---|---|
 | **Theme** | **Auto** (follows macOS, the default), **Light** or **Dark**, for all Scribe windows |
-| **Font** | iA Writer **Duo** (default), **Mono** or **Quattro**, with a live preview. Code always uses Mono |
+| **Typeface** | **Sans** (SF Pro, the default), **Serif** (New York) or **Mono** (SF Mono), with a live preview. Code always uses SF Mono |
 | **Size** | text size (12–26 pt) |
 | **Line length** | text column width: 64, 72 or 80 characters |
 | **Focus mode** / **Typewriter mode** | the writing modes, also in the View menu (⌘D / ⌘T) |
@@ -333,7 +334,20 @@ You can use both modes at once.
 
 In this version, math is copied as LaTeX source (inside `<span class="math">`).
 
-## 12. Changes made outside Scribe
+## 12. Printing and PDF
+
+**File → Print…** (**⌘P**) prints the open note as a clean document:
+
+- **no Markdown syntax**: headings, bold and italic, links, math, images, lists, checkboxes, quotes and code come out typeset, the way the editor shows them when the cursor is elsewhere;
+- **made for paper**: always dark text on white, at a reading size for print, in the typeface you chose in Settings;
+- **tidy pages**: a line, formula or image is never cut in half, and every page shows the note's title and page number at the bottom.
+
+To **save a PDF**, choose **PDF → Save as PDF** in the print window.
+**File → Page Setup…** (**⌘⇧P**) sets the paper size and orientation.
+
+In the Help window, **⌘P** prints the guide you're reading.
+
+## 13. Changes made outside Scribe
 
 Notes are ordinary files, so you can edit them in other apps, sync them (iCloud, Dropbox) or keep them in git. Scribe watches the library folder:
 
@@ -348,13 +362,13 @@ Notes are ordinary files, so you can edit them in other apps, sync them (iCloud,
 
 While the message is showing, autosave is paused, so nothing is overwritten until you decide.
 
-## 13. Keyboard shortcuts
+## 14. Keyboard shortcuts
 
 | Shortcut | Action |
 |---|---|
 | **⌘O** | open a library (folder) |
 | **⌘N** | new note |
-| **⌘P** | Quick Open: open a note by name |
+| **⌘⇧O** | Quick Open: open a note by name |
 | **⌘⇧F** | search the whole library |
 | **⌘F** | find in the note |
 | **⌘V** | paste (images are saved to `assets`) |
@@ -365,6 +379,8 @@ While the message is showing, autosave is paused, so nothing is overwritten unti
 | **⌘K** | link |
 | **⌘1 … ⌘6** | heading 1–6 |
 | **⌥⌘C** | copy as HTML |
+| **⌘P** | print the note (or save it as PDF) |
+| **⌘⇧P** | page setup |
 | **⌘D** | focus mode |
 | **⌘T** | typewriter mode |
 | **⌘⇧L** | show/hide the library panel |
@@ -373,9 +389,9 @@ While the message is showing, autosave is paused, so nothing is overwritten unti
 | **⌘?** | Help: Getting Started (also in the Help menu, with this manual) |
 | **⌘Z / ⌘⇧Z** | undo / redo |
 
-## 14. Limitations in version 0.1
+## 15. Limitations in version 0.1
 
-- **No export** to HTML or PDF; only "Copy as HTML". Export is planned for version 0.2.
+- **No HTML export** yet; use "Copy as HTML", or print to PDF (see [Printing and PDF](#12-printing-and-pdf)). Export to HTML is planned for version 0.2.
 - **One library and one window** at a time.
 - **Tables** are shown as text, without a cell editor.
 - **Sentence focus** (rather than paragraph focus) is planned for version 0.2.

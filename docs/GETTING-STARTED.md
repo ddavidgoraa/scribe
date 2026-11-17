@@ -143,9 +143,9 @@ Press **⌘⇧L** to open the **library panel** on the left. Press it again to h
 - The **+** at the bottom makes a new note.
 - **Right-click** a note to rename it or show it in Finder.
 
-### Jump to a note by name: ⌘P
+### Jump to a note by name: ⌘⇧O
 
-Press **⌘P**, type a few letters of the note's name and press **Return**.
+Press **⌘⇧O**, type a few letters of the note's name and press **Return**.
 
 ![Quick Open](images/04-quick-open.png)
 
@@ -181,7 +181,7 @@ Scribe follows your Mac's light or dark appearance automatically. Prefer one of 
 
 Open **Scribe → Settings…** (or press **⌘,**). A small preview at the top shows how your writing will look as you change things. You can choose:
 
-- **Font:** iA Writer Duo (the default), Mono or Quattro.
+- **Typeface:** Sans (the default), Serif or Mono — the Mac's own fonts.
 - **Size:** how big the text is. Quick shortcuts: **⌘+** bigger, **⌘−** smaller, **⌘0** back to normal.
 - **Line length:** how wide the text column is (64, 72 or 80 characters).
 - **Theme:** **Light**, **Dark**, or **Auto** to follow your Mac's setting (the default).
@@ -216,6 +216,9 @@ The same note was changed somewhere else (for example on another computer, or in
 **Can I open a different folder?**
 Yes: press **⌘O** and choose another folder.
 
+**How do I print a note, or save it as a PDF?**
+Press **⌘P**. Scribe prints the note as a clean document — no Markdown symbols, with formulas, pictures and checkboxes as you see them. To get a PDF instead, choose **PDF → Save as PDF** in the print window.
+
 **How do I make a backup?**
 Copy your notes folder to another place, such as an external drive or iCloud Drive. That's all there is to it.
 
@@ -226,7 +229,8 @@ Copy your notes folder to another place, such as an external drive or iCloud Dri
 | Press | To |
 |---|---|
 | **⌘N** | make a new note |
-| **⌘P** | open a note by name |
+| **⌘⇧O** | open a note by name |
+| **⌘P** | print a note or save it as PDF |
 | **⌘⇧F** | search all notes |
 | **⌘⇧L** | show or hide your notes |
 | **⌘B / ⌘I** | bold / italic |

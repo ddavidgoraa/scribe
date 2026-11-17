@@ -1,6 +1,6 @@
 # Scribe
 
-**A calm, minimal Markdown editor for macOS — with LaTeX math, inspired by iA Writer.**
+**A calm, minimal Markdown editor for macOS — with LaTeX math.**
 
 You write in plain `.md` files in a folder you choose. Formatting appears as you type, and the
 Markdown syntax steps aside until your cursor touches it.
@@ -11,10 +11,11 @@ Markdown syntax steps aside until your cursor touches it.
 
 - **Live preview, no preview pane.** Syntax like `**`, `#` and `[](…)` hides until your cursor touches it; the file always stays plain Markdown.
 - **Math.** `$…$` inline and `$$…$$` blocks, rendered natively (via [SwiftMath](https://github.com/mgriebling/SwiftMath)), with a live preview while you edit a formula.
-- **Typography first.** iA Writer Duo, Mono or Quattro; a centered column of 64, 72 or 80 characters; light, dark or automatic theme.
+- **Typography first.** The Mac's own fonts (SF Pro, New York or SF Mono); a centered column of 64, 72 or 80 characters; light, dark or automatic theme.
 - **Focus and typewriter modes.** Fade everything but the current paragraph (⌘D), keep the current line centered (⌘T).
 - **Your folder is your library.** Autosave, notes named after their first line, and changes made by other apps picked up instantly.
-- **Find anything.** Quick Open by name (⌘P) and full-text search that ignores case and accents (⌘⇧F).
+- **Find anything.** Quick Open by name (⌘⇧O) and full-text search that ignores case and accents (⌘⇧F).
+- **Print and PDF.** ⌘P prints a note as a clean document: no Markdown symbols, math and images typeset, tidy pages.
 - **Images.** Paste or drag them in; they're copied to an `assets` folder next to the note and shown inline.
 - **Keyboard-first.** ⌘B, ⌘I, ⌘K, ⌘1–6, ⌘⇧M and more; Copy as HTML (⌥⌘C).
 - **Private by design.** Fully offline and sandboxed; see [Privacy and security](#privacy-and-security).
@@ -94,8 +95,5 @@ Later: notarized releases, full LaTeX documents to PDF, wiki links, a table edit
 
 ## License
 
-Scribe is released under the [MIT License](LICENSE).
-
-It bundles the iA Writer Duo, Mono and Quattro typefaces © Information Architects Inc., under the
-SIL Open Font License 1.1 (`app/Scribe/Resources/Fonts/`). Other components are listed in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Scribe is released under the [MIT License](LICENSE). It uses the system fonts of macOS and bundles
+no typefaces. Other components are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

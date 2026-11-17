@@ -1,7 +1,7 @@
 import MdCore
 import SwiftUI
 
-/// ⌘P: a Spotlight-like palette. Fuzzy-find a note by name or path; ⌘⏎ creates a
+/// ⌘⇧O: a Spotlight-like palette. Fuzzy-find a note by name or path; ⌘⏎ creates a
 /// note titled with what you typed.
 struct QuickOpenView: View {
     @Environment(LibraryModel.self) private var library

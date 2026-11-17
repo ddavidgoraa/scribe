@@ -4,7 +4,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 
 ## Goal & distribution
 
-- Markdown editor with math for macOS, modeled on iA Writer.
+- Markdown editor with math for macOS, in its own minimal style. (Initially modeled on iA Writer; independent since 2026-11-17.)
 - Open source on GitHub, MIT license.
 - macOS 14+, Apple Silicon only (`aarch64-apple-darwin`).
 - No App Sandbox; `.dmg` via GitHub Releases. Notarization optional, later.
@@ -46,9 +46,9 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - Pasted / dropped images saved to `assets/<note>-<timestamp>.png` next to the note, inserted as relative path.
 - Rename in sidebar.
 
-## Look (iA)
+## Look
 
-- Bundled iA Writer Mono / Duo / Quattro (SIL OFL); default Duo.
+- System fonts only (nothing bundled): Sans = SF Pro (default), Serif = New York, Mono = SF Mono; code always SF Mono.
 - Centered column ~64 chars, line height 1.5; headings bold and slightly larger.
 - Light/dark following system; blue caret; minimal chrome; sidebar toggle ⌘⇧L.
 - MVP settings: font + size.
@@ -56,7 +56,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 
 ## Shortcuts
 
-⌘B ⌘I ⌘K (link) ⌘1–6 (headings) ⌘⇧M (math) ⌘⇧X (strikethrough) ⌘⇧C (code) ⌥⌘C (copy as HTML) · ⌘P quick open · ⌘⇧F library search · ⌘F in-file find · ⌘N new file
+⌘B ⌘I ⌘K (link) ⌘1–6 (headings) ⌘⇧M (math) ⌘⇧X (strikethrough) ⌘⇧C (code) ⌥⌘C (copy as HTML) · ⌘⇧O quick open · ⌘P print · ⌘⇧P page setup · ⌘⇧F library search · ⌘F in-file find · ⌘N new file
 
 ## Tests
 
@@ -71,7 +71,7 @@ Decisions agreed on 2026-11-05. This is the source of truth for scope; change it
 - [x] **M2** — syntax styling from Rust spans (markers visible)
 - [x] **M3** — marker hiding/reveal; images and math as attachments (SwiftMath)
 - [x] **M4** — ⌘P quick open, ⌘⇧F search, formatting shortcuts
-- [x] **M5** — iA typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
+- [x] **M5** — typography, themes, typewriter, paragraph focus → release v0.1 `.dmg`
 
 ## Later
 
@@ -87,7 +87,7 @@ Direction A from the UI proposal: the window is a sheet of paper; chrome appears
   icons, dates on the right; Liquid Glass on macOS 26+ (`disableGlass` default turns it off), solid panel before.
 - Status pills (words · reading time, saved state, modes) on pointer movement; conflict toast; calm empty states.
 - Spotlight-like Quick Open; ⌘⏎ creates a note titled with the query.
-- **Neutral white** palette (`Palette`), one accent (iA blue); line length 64 / 72 / 80.
+- **Neutral white** palette (`Palette`), one accent (Scribe ink blue #2D5BE3 / #7C9BF5 dark); line length 64 / 72 / 80.
 
 ## Notes
 
@@ -107,6 +107,10 @@ Direction A from the UI proposal: the window is a sheet of paper; chrome appears
 - Website: `site/` templates + `core/scribe-site` (renders docs with mdcore, GitHub-style heading ids, links
   rewritten to pages) → GitHub Pages via `.github/workflows/pages.yml`, which skips while the repo is private;
   `scripts/github-settings.sh` enables Pages once public. URL: https://ddavidgoraa.github.io/scribe/
+- Printing (⌘P): `NotePrinter` lays the note out in a TextKit 2 `PrintableNoteView` styled by the highlighter in
+  print mode (bullets, checkboxes and rules typeset; hidden syntax removed from the printed copy so PDFs carry no
+  Markdown in their text layer), light colors, print font size, page breaks that never split a line, title and
+  page number in the footer. The Help window prints its guide via WebKit.
 - Release: `scripts/make-dmg.sh` (also used by CI on `v*` tags) builds an ad-hoc signed, non-notarized DMG.
 
 - Release profile sets `strip = false`: stripping corrupted host proc-macro dylibs on the local toolchain

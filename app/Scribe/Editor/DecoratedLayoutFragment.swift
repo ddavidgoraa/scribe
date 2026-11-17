@@ -129,7 +129,10 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
             y = origin.y + bounds.maxY + Decoration.blockPadding
         }
         let rect = CGRect(origin: CGPoint(x: x, y: y), size: decoration.size)
-        guard decoration.tinted else {
+        // On paper the text is black anyway, and masks don't survive PDF and printer
+        // contexts: draw the (vector) image as it is.
+        let printing = !(NSGraphicsContext.current?.isDrawingToScreen ?? true)
+        guard decoration.tinted, !printing else {
             decoration.image.draw(in: rect, from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: true, hints: nil)
             return
         }
@@ -142,5 +145,13 @@ final class DecoratedLayoutFragment: NSTextLayoutFragment {
         context.fill(rect)
         context.endTransparencyLayer()
         context.restoreGState()
+    }
+}
+
+/// Lays out every paragraph with `DecoratedLayoutFragment` (editor and print views).
+final class DecoratedFragmentProvider: NSObject, NSTextLayoutManagerDelegate {
+    func textLayoutManager(_ textLayoutManager: NSTextLayoutManager, textLayoutFragmentFor location: any NSTextLocation,
+                           in textElement: NSTextElement) -> NSTextLayoutFragment {
+        DecoratedLayoutFragment(textElement: textElement, range: textElement.elementRange)
     }
 }
