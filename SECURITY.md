@@ -18,8 +18,8 @@ Only the latest release receives security fixes.
 
 - **App Sandbox.** Scribe runs in the macOS App Sandbox. It can read and write only the notes
   folder you choose (remembered with a security-scoped bookmark), files you open, paste or drag
-  in, and its own container. Its entitlements are limited to user-selected files, bookmarks and
-  outgoing network connections (see below).
+  in, and its own container. Its entitlements are limited to user-selected files, bookmarks,
+  printing and outgoing network connections (see below).
 - **No network use.** Scribe never connects to the internet: no accounts, analytics, crash
   reporting or update checks. Images from the web in your notes are not downloaded.
   The sandbox entitlement for outgoing connections is present only because Apple's WebKit,

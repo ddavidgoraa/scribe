@@ -30,7 +30,8 @@ targets:
       - package: MdCore
       - package: SwiftMath
     # App Sandbox: the app reaches only what the user picks (the library folder, files
-    # opened or dropped) and its own container. No network access.
+    # opened or dropped) and its own container. This is the source of truth: XcodeGen
+    # rewrites Scribe.entitlements from these properties, so edit them here.
     entitlements:
       path: Scribe/Scribe.entitlements
       properties:
@@ -41,6 +42,9 @@ targets:
         # content. Scribe's own code makes no network connections, and the Help view
         # blocks all web requests (HelpWebSecurity).
         com.apple.security.network.client: true
+        # Printing (File → Print): without it the sandbox hides the printers and the
+        # print panel never appears.
+        com.apple.security.print: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.dawidgora.scribe

@@ -19,5 +19,22 @@ xcuserdata/
 .DS_Store
 dist/
 
+# Never commit secrets, signing material or logs (they may hold tokens, paths or
+# device names). Keep real secrets in the macOS Keychain or GitHub Actions secrets.
+.env
+.env.*
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.cer
+*.certSigningRequest
+*.keychain
+*.keychain-db
+*.mobileprovision
+*.provisionprofile
+*.log
+
 # Website build output (scripts: make site)
 site/_build/

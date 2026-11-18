@@ -87,6 +87,16 @@ final class PrintingTests: XCTestCase {
         }
     }
 
+    /// The App Sandbox blocks printing (the print panel, printers) without this entitlement;
+    /// printing to a PDF file in the tests above works even without it.
+    func testTheSandboxAllowsPrinting() throws {
+        let task = try XCTUnwrap(SecTaskCreateFromSelf(nil))
+        let sandboxed = SecTaskCopyValueForEntitlement(task, "com.apple.security.app-sandbox" as CFString, nil) as? Bool
+        let print = SecTaskCopyValueForEntitlement(task, "com.apple.security.print" as CFString, nil) as? Bool
+        XCTAssertEqual(sandboxed, true)
+        XCTAssertEqual(print, true, "com.apple.security.print missing from Scribe.entitlements")
+    }
+
     func testLongNotesSpanSeveralPagesWithoutCuttingLines() throws {
         let long = (1...120).map { "Paragraph \($0): the quick brown fox jumps over the lazy dog, again and again." }
             .joined(separator: "\n\n")

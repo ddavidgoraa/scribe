@@ -194,6 +194,20 @@ final class LibraryModel {
         document?.save()
     }
 
+    /// File → Print (⌘P): prints the open note as a clean document, wherever the keyboard
+    /// focus is (editor, library panel, search). Returns false when no note is open.
+    @discardableResult
+    func printNote() -> Bool {
+        guard let document else { return false }
+        let url = document.url
+        NotePrinter.print(text: document.text,
+                          title: url.deletingPathExtension().lastPathComponent,
+                          baseURL: url.deletingLastPathComponent(),
+                          font: EditorFont(storedValue: UserDefaults.standard.string(forKey: EditorSettings.fontKey)),
+                          window: NSApp.mainWindow ?? NSApp.keyWindow)
+        return true
+    }
+
     /// Creates `Untitled.md` in `folder` (relative path; `nil` = folder of the open note, else root).
     func newNote(in folder: String? = nil) {
         guard let root else { return }

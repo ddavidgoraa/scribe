@@ -149,6 +149,10 @@ struct LibraryPanel: View {
         HStack {
             Text(footerText).lineLimit(1).truncationMode(.middle)
             Spacer()
+            Button { library.printNote() } label: { Image(systemName: "printer").font(.system(size: 12, weight: .semibold)) }
+                .buttonStyle(.plain)
+                .disabled(library.document == nil)
+                .help("Print Note (⌘P)")
             Button {
                 help.document = .gettingStarted
                 openWindow(id: HelpCommands.windowID)

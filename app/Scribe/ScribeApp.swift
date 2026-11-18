@@ -45,8 +45,7 @@ struct ScribeApp: App {
             CommandGroup(replacing: .printItem) {
                 Button("Page Setup…") { NSApp.sendAction(#selector(NSApplication.runPageLayout(_:)), to: nil, from: nil) }
                     .keyboardShortcut("p", modifiers: [.command, .shift])
-                // The focused note or Help guide prints itself (responder chain).
-                Button("Print…") { send(#selector(MarkdownTextView.printDocument(_:))) }
+                Button("Print…") { printFrontmost() }
                     .keyboardShortcut("p")
             }
             CommandGroup(after: .pasteboard) {
@@ -109,6 +108,22 @@ struct ScribeApp: App {
     }
 
     /// Sends a formatting action to the focused editor through the responder chain.
+    /// The Help window prints its guide when it's in front; otherwise the open note is
+    /// printed, wherever the keyboard focus is in the main window.
+    private func printFrontmost() {
+        if let guide = NSApp.keyWindow?.contentView.flatMap(Self.findGuide) {
+            guide.printDocument(nil)
+            return
+        }
+        if !library.printNote() { NSSound.beep() }
+    }
+
+    private static func findGuide(in view: NSView) -> HelpWebView.PrintableWebView? {
+        if let web = view as? HelpWebView.PrintableWebView { return web }
+        for sub in view.subviews { if let web = findGuide(in: sub) { return web } }
+        return nil
+    }
+
     private func send(_ action: Selector, _ level: Int? = nil) {
         NSApp.sendAction(action, to: nil, from: level.map { NSNumber(value: $0) })
     }
