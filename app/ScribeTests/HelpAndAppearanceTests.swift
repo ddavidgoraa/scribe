@@ -19,7 +19,7 @@ final class HelpAndAppearanceTests: XCTestCase {
     func testDocumentFromLink() {
         XCTAssertEqual(HelpDocument(fileName: "MANUAL.md"), .manual)
         XCTAssertEqual(HelpDocument(fileName: "GETTING-STARTED.md"), .gettingStarted)
-        XCTAssertNil(HelpDocument(fileName: "PLAN.md"))
+        XCTAssertNil(HelpDocument(fileName: "README.md"))
     }
 
     func testAppearanceSetting() {

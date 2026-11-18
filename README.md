@@ -1,6 +1,8 @@
-# Scribe
+<p align="center"><img src="docs/images/icon.png" width="128" height="128" alt="Scribe app icon"></p>
 
-**A calm, minimal Markdown editor for macOS — with LaTeX math.**
+<h1 align="center">Scribe</h1>
+
+<p align="center"><strong>A calm, minimal Markdown editor for macOS — with LaTeX math.</strong></p>
 
 You write in plain `.md` files in a folder you choose. Formatting appears as you type, and the
 Markdown syntax steps aside until your cursor touches it.
@@ -74,24 +76,26 @@ make audit    # dependency vulnerabilities, licenses and sources
 | `app/Scribe` | SwiftUI and AppKit app: the TextKit 2 editor with live preview, library panel, Quick Open, settings, help |
 | `docs/` | User guides (also bundled into the app's Help window) |
 | `site/`, `core/scribe-site` | The website (GitHub Pages), built from the guides with the same Markdown code as the app: `make site` |
-| `scripts/` | Build, packaging and repository setup scripts |
-
-The scope and design decisions are in [PLAN.md](PLAN.md).
+| `scripts/` | Build, packaging and repository setup scripts; `scripts/icon/` draws the app icon |
 
 ## Contributing
 
-Contributions are welcome. Work happens on the `dev` branch; open pull requests against `dev`.
+Contributions are welcome. `main` always builds and passes its tests; every change goes through a
+short-lived branch and a pull request.
 
-1. Fork the repository and create a branch from `dev`.
+1. Fork the repository and create a branch from `main` (for example `fix/quick-open-crash` or
+   `feature/word-goal`).
 2. Make your change, with tests where it makes sense.
-3. Run `make test` and `make audit`; CI runs the same checks on every pull request.
+3. Run `make test` and `make audit`, then open a pull request against `main`. CI runs the tests,
+   the dependency audit and a security check of the workflows; all must pass before merging.
 
 Please report security issues privately (see [SECURITY.md](SECURITY.md)), not as public issues.
 
 ## Roadmap
 
-Next (v0.2): export to HTML and PDF with typeset math, sentence focus mode, and a Polish interface.
-Later: notarized releases, full LaTeX documents to PDF, wiki links, a table editor. See [PLAN.md](PLAN.md).
+Next (v0.2): export to HTML with typeset math, sentence focus mode, and a Polish interface.
+(PDF is already there: print a note and choose **Save as PDF**.)
+Later: notarized releases, full LaTeX documents to PDF, wiki links, a table editor.
 
 ## License
 
