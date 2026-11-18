@@ -6,7 +6,7 @@ license.workspace = true
 publish.workspace = true
 
 [dependencies]
-notify-debouncer-full = "0.6"
+notify-debouncer-full = "0.7"
 nucleo-matcher = "0.3.1"
 pulldown-cmark = { version = "0.13.6", default-features = false, features = ["html"] }
 tempfile = "3"
