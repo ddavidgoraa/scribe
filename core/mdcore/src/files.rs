@@ -4,6 +4,7 @@ use std::fs::{self, OpenOptions};
 use std::io::{ErrorKind, Write};
 use std::path::{Path, PathBuf};
 
+use pulldown_cmark::{Event, Options, Parser};
 use unicode_normalization::UnicodeNormalization;
 
 use crate::error::{Error, IoContext, Result};
@@ -52,12 +53,41 @@ pub fn create_untitled(dir: &Path) -> Result<PathBuf> {
     unreachable!()
 }
 
-/// Derives a file name stem from a note's first non-empty line
-/// (heading markers stripped, characters unsafe in file names replaced).
+/// Derives a file name stem from a note's first non-empty line: the text a reader
+/// sees, without Markdown syntax (`# **Trip** to [Kraków](…)` → `Trip to Kraków`),
+/// with characters unsafe in file names replaced.
 pub fn title_from_text(text: &str) -> Option<String> {
-    let line = text.lines().map(str::trim).find(|l| !l.is_empty())?;
-    let line = line.trim_start_matches('#').trim();
-    sanitize_stem(line)
+    let line = first_line(text)?;
+    sanitize_stem(&plain_text(line)).or_else(|| legacy_title(line))
+}
+
+/// How titles were derived before Markdown syntax was removed (only `#` stripped).
+/// Notes named that way still count as following their first line, so they are
+/// renamed to the clean title on their next save.
+fn legacy_title(line: &str) -> Option<String> {
+    sanitize_stem(line.trim_start_matches('#').trim())
+}
+
+fn first_line(text: &str) -> Option<&str> {
+    text.lines().map(str::trim).find(|l| !l.is_empty())
+}
+
+/// The visible text of one line of Markdown: emphasis, code, link and math syntax,
+/// heading, list, quote and task markers removed; link and image text kept.
+fn plain_text(line: &str) -> String {
+    let options = Options::ENABLE_STRIKETHROUGH
+        | Options::ENABLE_TASKLISTS
+        | Options::ENABLE_MATH
+        | Options::ENABLE_GFM;
+    let mut out = String::new();
+    for event in Parser::new_ext(line, options) {
+        match event {
+            Event::Text(t) | Event::Code(t) | Event::InlineMath(t) | Event::DisplayMath(t) => out.push_str(&t),
+            Event::SoftBreak | Event::HardBreak => out.push(' '),
+            _ => {}
+        }
+    }
+    out
 }
 
 /// Whether a note's file name should follow its first line.
@@ -75,10 +105,10 @@ pub fn follows_first_line(stem: &str, text: &str) -> bool {
     if strip_number_suffix(stem) == UNTITLED {
         return true;
     }
-    match title_from_text(text) {
-        Some(title) => stem == title || strip_number_suffix(stem) == title,
-        None => false,
-    }
+    let base = strip_number_suffix(stem);
+    let matches = |title: Option<String>| title.is_some_and(|t| stem == t || base == t);
+    let line = first_line(text);
+    matches(title_from_text(text)) || matches(line.and_then(legacy_title))
 }
 
 /// `"Ideas 2"` → `"Ideas"`; numbers below 2 and non-numeric suffixes are kept.
@@ -247,6 +277,35 @@ mod tests {
         let b = create_untitled(dir.path()).unwrap();
         assert_eq!(a.file_name().unwrap(), "Untitled.md");
         assert_eq!(b.file_name().unwrap(), "Untitled 2.md");
+    }
+
+    #[test]
+    fn title_drops_markdown_syntax() {
+        let cases = [
+            ("Pierwsza **Notatka**", "Pierwsza Notatka"),
+            ("# Trip to *Kraków*", "Trip to Kraków"),
+            ("## __Bold__ and _italic_ and ~~gone~~", "Bold and italic and gone"),
+            ("Call `run()` now", "Call run() now"),
+            ("See [the plan](https://example.com/plan) today", "See the plan today"),
+            ("![Sunset](assets/sun.png) photo", "Sunset photo"),
+            ("Einstein: $E = mc^2$", "Einstein- E = mc^2"),
+            ("- [ ] Buy tickets", "Buy tickets"),
+            ("1. Morning train", "Morning train"),
+            ("> Quoted idea", "Quoted idea"),
+            ("<b>Hello</b> world", "Hello world"),
+        ];
+        for (line, title) in cases {
+            assert_eq!(title_from_text(line).as_deref(), Some(title), "{line}");
+        }
+    }
+
+    #[test]
+    fn notes_named_before_syntax_removal_keep_following() {
+        // Named by the old rule: they still follow, so the next save renames them.
+        assert!(follows_first_line("Pierwsza **Notatka**", "Pierwsza **Notatka**\n\ntext"));
+        assert!(follows_first_line("Pierwsza Notatka", "Pierwsza **Notatka**\n"));
+        assert!(follows_first_line("Pierwsza Notatka 2", "Pierwsza **Notatka**\n"));
+        assert!(!follows_first_line("Renamed by hand", "Pierwsza **Notatka**\n"));
     }
 
     #[test]

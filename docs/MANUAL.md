@@ -99,7 +99,8 @@ This keeps working after you restart the app. It applies to notes that:
 
 Details:
 
-- leading `#` characters are left out;
+- Markdown syntax is left out, so the name is the text you see: `# **Trip** to [Kraków](https://…)`
+  becomes `Trip to Kraków.md` (headings, bold, italic, code, links, math, list and quote markers);
 - characters that aren't allowed in file names (`/`, `\`, `:`) become `-`;
 - names are at most 80 characters long;
 - if a name is taken, Scribe adds ` 2`, ` 3` and so on.
