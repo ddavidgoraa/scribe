@@ -27,6 +27,9 @@ final class LibraryModel {
         }
     }
     var errorMessage: String?
+    /// The open library can be read but not written (Scribe holds read-only access to it):
+    /// the user has to choose the folder again to grant write access.
+    var needsWriteAccess = false
     let search = SearchModel()
     /// UI state. The library panel starts hidden: the window opens on the last note.
     var isSidebarVisible = false
@@ -61,6 +64,8 @@ final class LibraryModel {
 
     func chooseLibrary() {
         let panel = NSOpenPanel()
+        // Start in the current library, so granting access again is a single click.
+        panel.directoryURL = root
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
@@ -70,21 +75,17 @@ final class LibraryModel {
         openLibrary(at: url)
     }
 
-    /// The library folder from the last launch: from its security-scoped bookmark, or
-    /// from a plain path saved by an older version (readable only outside the sandbox).
+    /// The library folder from the last launch, from its security-scoped bookmark.
+    ///
+    /// Only a bookmark counts: it carries the access the user granted by choosing the
+    /// folder. A plain path saved by a version before the sandbox gives no write access
+    /// (a bookmark built from it would be read-only), so in that case the user picks the
+    /// folder again.
     private static func savedLibraryURL() -> URL? {
-        let defaults = UserDefaults.standard
-        if let data = defaults.data(forKey: bookmarkKey) {
-            var stale = false
-            if let url = try? URL(resolvingBookmarkData: data, options: .withSecurityScope,
-                                  relativeTo: nil, bookmarkDataIsStale: &stale) {
-                return url // a stale bookmark is re-saved by openLibrary
-            }
-        }
-        if let path = defaults.string(forKey: rootKey), FileManager.default.isReadableFile(atPath: path) {
-            return URL(fileURLWithPath: path)
-        }
-        return nil
+        guard let data = UserDefaults.standard.data(forKey: bookmarkKey) else { return nil }
+        var stale = false
+        return try? URL(resolvingBookmarkData: data, options: .withSecurityScope,
+                        relativeTo: nil, bookmarkDataIsStale: &stale) // a stale bookmark is re-saved by openLibrary
     }
 
     /// The folder whose security-scoped access this session holds.
@@ -97,7 +98,12 @@ final class LibraryModel {
         // next one. (Outside the sandbox these calls are harmless no-ops.)
         accessedFolder?.stopAccessingSecurityScopedResource()
         accessedFolder = url.startAccessingSecurityScopedResource() ? url : nil
-        if let bookmark = try? url.bookmarkData(options: .withSecurityScope,
+        // Read-only access (e.g. a bookmark made from an old plain path) lets the library
+        // show but not save: ask for the folder again instead of failing on every save,
+        // and don't remember that access.
+        needsWriteAccess = !FileManager.default.isWritableFile(atPath: url.path)
+        if !needsWriteAccess,
+           let bookmark = try? url.bookmarkData(options: .withSecurityScope,
                                                 includingResourceValuesForKeys: nil, relativeTo: nil) {
             UserDefaults.standard.set(bookmark, forKey: Self.bookmarkKey)
         }

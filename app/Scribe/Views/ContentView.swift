@@ -45,6 +45,16 @@ struct ContentView: View {
         ) { _ in
             Button("OK") {}
         } message: { Text($0) }
+        .alert(
+            "Scribe can't save in this folder",
+            isPresented: Binding(get: { library.needsWriteAccess && library.errorMessage == nil },
+                                 set: { if !$0 { library.needsWriteAccess = false } })
+        ) {
+            Button("Choose Folder…") { library.chooseLibrary() }
+            Button("Not Now", role: .cancel) {}
+        } message: {
+            Text("Scribe can read “\(library.root?.lastPathComponent ?? "your notes folder")” but needs your permission to save in it. Choose the folder again and click Open.")
+        }
     }
 
     @ViewBuilder private var detail: some View {
