@@ -32,8 +32,9 @@ Version: 0.1 · Requires macOS 14 Sonoma or later on a Mac with Apple silicon (M
 
 ## 1. Installation
 
-1. Open `Scribe-0.1.0-arm64.dmg`.
-2. Drag **Scribe** into the **Applications** folder.
+1. Download `Scribe-<version>-arm64.dmg` from the [latest release](https://github.com/ddavidgoraa/scribe/releases/latest)
+   (or the [website](https://ddavidgoraa.github.io/scribe/)).
+2. Open it and drag **Scribe** into the **Applications** folder.
 3. Launch Scribe from Launchpad or the Applications folder.
 
 Scribe isn't notarized by Apple yet, so macOS blocks it the first time you open it. To allow it, do one of the following:

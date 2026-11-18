@@ -27,12 +27,12 @@ Every detail is in the [**user manual**](docs/MANUAL.md). Both are also built in
 
 ## Install
 
-> **Status:** version 0.1, in development. The first public release will be published on the
-> [Releases](../../releases) page.
+**[Download the latest version for Mac](https://github.com/ddavidgoraa/scribe/releases/latest)** ·
+[website](https://ddavidgoraa.github.io/scribe/) · [all releases](../../releases)
 
 **Requirements:** macOS 14 Sonoma or later on a Mac with Apple silicon (M1 or newer).
 
-1. Download `Scribe-<version>-arm64.dmg` from [Releases](../../releases).
+1. Download `Scribe-<version>-arm64.dmg` from the [latest release](https://github.com/ddavidgoraa/scribe/releases/latest).
 2. Open it and drag **Scribe** into **Applications**.
 3. On first launch, choose the folder for your notes.
 

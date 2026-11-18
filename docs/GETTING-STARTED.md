@@ -27,9 +27,11 @@ So **⌘N** means: hold **Command** and press **N**.
 
 ## 1. Install Scribe
 
-1. Open the file **Scribe-0.1.0-arm64.dmg** (double-click it).
-2. In the window that opens, drag the **Scribe** icon onto the **Applications** folder.
-3. Open Scribe from **Launchpad** or the **Applications** folder.
+1. Download Scribe from the [Scribe website](https://ddavidgoraa.github.io/scribe/) (the **Download for Mac** button).
+   You get a file named like **Scribe-0.1.0-arm64.dmg** in your **Downloads** folder.
+2. Open that file (double-click it).
+3. In the window that opens, drag the **Scribe** icon onto the **Applications** folder.
+4. Open Scribe from **Launchpad** or the **Applications** folder.
 
 **The first time, your Mac will say it can't open Scribe.** That's normal for apps that aren't from the App Store yet. To allow it:
 
